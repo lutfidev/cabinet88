@@ -100,6 +100,9 @@ ehthumbs.db
 # Claude Code lokal (settings per-mesin, bukan yang di-share)
 .claude/settings.local.json
 
-# Dokumentasi — semua .md lokal saja, hanya README.md yang ikut ke GitHub.
+# Dokumentasi — semua .md lokal saja, hanya README.md root yang ikut ke GitHub.
 *.md
-!README.md
+!/README.md
+
+# Claude Design handoff — bundle-nya ikut, preview binernya tidak.
+design/.thumbnail
