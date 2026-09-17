@@ -114,6 +114,14 @@ abstract final class AppTextStyles {
   static TextStyle get sectionHeader =>
       _pixel(AppFontSizes.pixel9, AppColors.accentSecondary, letterSpacing: AppLetterSpacing.label);
 
+  /// The greeting eyebrow on the home header. Same face and tracking as
+  /// [sectionHeader], but the design draws this one in magenta, not cyan.
+  static TextStyle get greetingEyebrow =>
+      _pixel(AppFontSizes.pixel9, AppColors.accentPrimary, letterSpacing: AppLetterSpacing.label);
+
+  /// The high score at the end of a playlist row.
+  static TextStyle get rowScore => _pixel(AppFontSizes.pixel8, AppColors.textPixelMuted);
+
   /// Play-shell chrome: `EXIT`, `PAUSE`, HUD labels, leaderboard rows.
   static TextStyle get pixelLabel => _pixel(AppFontSizes.pixel9, AppColors.textFaint);
 
@@ -155,6 +163,10 @@ abstract final class AppTextStyles {
 
   /// The workhorse: subtitles, scores, chips, overlay notes.
   static TextStyle get bodySmall => _body(AppFontSizes.body125, AppColors.textSubtle);
+
+  /// The line under a card title, such as the tonight-pick subtitle. One step
+  /// dimmer than [bodySmall].
+  static TextStyle get cardSubtitle => _body(AppFontSizes.body125, AppColors.textScore);
 
   /// Note copy inside a card.
   static TextStyle get body =>
