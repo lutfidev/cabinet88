@@ -110,6 +110,10 @@ abstract final class AppTextStyles {
   /// Small eyebrow: `TONIGHT'S PICK`, `CABINET FILE`, `PURCHASE`.
   static TextStyle get eyebrow => _pixel(AppFontSizes.pixel8, AppColors.accentHighlight);
 
+  /// The `CABINET FILE` label on the detail top bar. The same size as
+  /// [eyebrow], but the design draws this one muted, not in highlight yellow.
+  static TextStyle get topBarEyebrow => _pixel(AppFontSizes.pixel8, AppColors.textMeta);
+
   /// Section header: `ALL CABINETS`, `CABINET SETTINGS`, `GOOD EVENING`.
   static TextStyle get sectionHeader =>
       _pixel(AppFontSizes.pixel9, AppColors.accentSecondary, letterSpacing: AppLetterSpacing.label);
@@ -125,6 +129,10 @@ abstract final class AppTextStyles {
   /// Play-shell chrome: `EXIT`, `PAUSE`, HUD labels, leaderboard rows.
   static TextStyle get pixelLabel => _pixel(AppFontSizes.pixel9, AppColors.textFaint);
 
+  /// A leaderboard handle. The same face and size as [pixelLabel], drawn at
+  /// full strength; [pixelLabel] itself carries the rank's default colour.
+  static TextStyle get leaderHandle => _pixel(AppFontSizes.pixel9, AppColors.textPrimary);
+
   /// Text inside the green play pill.
   static TextStyle get playButton => _pixel(AppFontSizes.pixel9, AppColors.onAccentPositive);
 
@@ -133,6 +141,10 @@ abstract final class AppTextStyles {
 
   /// Detail stat tile value, and a detail trophy glyph.
   static TextStyle get statValue => _pixel(AppFontSizes.pixel11, AppColors.accentSecondary);
+
+  /// The single character inside a detail trophy ring. A locked row recolours
+  /// this to [AppColors.textLocked], as the design does.
+  static TextStyle get trophyGlyph => _pixel(AppFontSizes.pixel11, AppColors.accentHighlight);
 
   /// Trophy-case glyph and podium numeral.
   static TextStyle get glyphPixel => _pixel(AppFontSizes.pixel12, AppColors.accentHighlight);
@@ -155,6 +167,10 @@ abstract final class AppTextStyles {
   /// Row meta, settings hints, trophy descriptions, the D-pad hint.
   static TextStyle get caption => _body(AppFontSizes.body11, AppColors.textFaint);
 
+  /// A trophy description. One step brighter than [caption]; the design draws
+  /// this line at .45, not .40.
+  static TextStyle get captionMeta => _body(AppFontSizes.body11, AppColors.textMeta);
+
   /// Inline links such as `See all` and `All 10`, and footer notes.
   static TextStyle get captionLink => _body(AppFontSizes.body115, AppColors.textMeta);
 
@@ -167,6 +183,9 @@ abstract final class AppTextStyles {
   /// The line under a card title, such as the tonight-pick subtitle. One step
   /// dimmer than [bodySmall].
   static TextStyle get cardSubtitle => _body(AppFontSizes.body125, AppColors.textScore);
+
+  /// The score at the end of a leaderboard row.
+  static TextStyle get leaderScore => _body(AppFontSizes.body125, AppColors.textScore);
 
   /// Note copy inside a card.
   static TextStyle get body =>

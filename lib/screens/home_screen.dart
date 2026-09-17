@@ -5,6 +5,7 @@ import '../models/cabinet_catalog.dart';
 import '../theme/app_theme.dart';
 import '../widgets/layouts/playlist_layout.dart';
 import '../widgets/pixel_sprite.dart';
+import '../widgets/screen_rise.dart';
 import '../widgets/sprite_maps.dart';
 import 'cabinet_detail_screen.dart';
 
@@ -29,7 +30,7 @@ class HomeScreen extends StatelessWidget {
         child: Material(
           type: MaterialType.transparency,
           child: SafeArea(
-            child: _ScreenRise(
+            child: ScreenRise(
               child: SingleChildScrollView(
                 padding: AppInsets.screen,
                 child: Column(
@@ -101,48 +102,6 @@ class _AvatarButton extends StatelessWidget {
           pixelSize: AppSizes.spriteNav,
           glow: AppColors.accentSecondary,
         ),
-      ),
-    );
-  }
-}
-
-/// The design's avRise: a screen body fades up ten pixels on entry.
-class _ScreenRise extends StatefulWidget {
-  const _ScreenRise({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_ScreenRise> createState() => _ScreenRiseState();
-}
-
-class _ScreenRiseState extends State<_ScreenRise>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: AppDurations.screenRise,
-  )..forward();
-
-  late final Animation<double> _eased =
-      CurvedAnimation(parent: _controller, curve: Curves.ease);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _eased,
-      child: AnimatedBuilder(
-        animation: _eased,
-        builder: (BuildContext context, Widget? child) => Transform.translate(
-          offset: Offset(0, AppSpacing.s10 * (1 - _eased.value)),
-          child: child,
-        ),
-        child: widget.child,
       ),
     );
   }

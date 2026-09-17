@@ -42,6 +42,9 @@ abstract final class AppSizes {
   static const double boardPitch = 17;
   static const double boardCellInset = 1;
 
+  /// The rank column on a leaderboard row.
+  static const double leaderRankColumn = 24;
+
   /// Progress bars: inline, then the trophy case.
   static const double progressBar = 4;
   static const double progressBarLarge = 6;
