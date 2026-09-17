@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/home_screen.dart';
+import 'services/audio_service.dart';
+import 'services/haptic_service.dart';
 import 'services/progress_service.dart';
 import 'services/settings_service.dart';
 import 'services/trophy_service.dart';
@@ -37,6 +39,17 @@ class Cabinet88App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<ProgressService>.value(value: progress),
         ChangeNotifierProvider<SettingsService>.value(value: settings),
+        // Feel, both halves of it. Each reads its own switch at the moment of
+        // the call, so a toggle needs no rebuild to take effect.
+        Provider<HapticService>(
+          create: (BuildContext context) =>
+              HapticService(context.read<SettingsService>()),
+        ),
+        Provider<AudioService>(
+          create: (BuildContext context) =>
+              AudioService(context.read<SettingsService>()),
+          dispose: (BuildContext _, AudioService audio) => audio.dispose(),
+        ),
         // Every trophy is derived, never stored, so the service is rebuilt
         // whenever progress moves and the case updates with it.
         ProxyProvider<ProgressService, TrophyService>(

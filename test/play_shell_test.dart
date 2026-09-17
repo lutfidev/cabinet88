@@ -5,6 +5,8 @@ import 'package:cabinet88/games/serpent88/serpent_engine.dart';
 import 'package:cabinet88/models/cabinet.dart';
 import 'package:cabinet88/models/cabinet_catalog.dart';
 import 'package:cabinet88/screens/play_screen.dart';
+import 'package:cabinet88/services/audio_service.dart';
+import 'package:cabinet88/services/haptic_service.dart';
 import 'package:cabinet88/services/progress_service.dart';
 import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/theme/app_theme.dart';
@@ -39,7 +41,30 @@ class _CornerRandom implements Random {
 Serpent88Game _predictableSerpent() =>
     Serpent88Game(engine: SerpentEngine(random: _CornerRandom()));
 
+/// The sink a shipped audio build would replace. Here it just remembers what
+/// the shell asked for.
+class _RecordingSink implements AudioSink {
+  final List<ArcadeCue> cues = <ArcadeCue>[];
+  final List<bool> hum = <bool>[];
+
+  @override
+  void play(ArcadeCue cue) => cues.add(cue);
+
+  @override
+  void ambience(bool playing) => hum.add(playing);
+}
+
 late ProgressService _progress;
+late _RecordingSink _audioSink;
+
+/// Every buzz the platform was asked for, in order.
+late List<Object?> _buzzes;
+
+/// The buzzes a control press makes, filtered out of [_buzzes] where a test
+/// only cares about what the run itself did.
+List<Object?> get _runBuzzes => _buzzes
+    .where((Object? buzz) => buzz != 'HapticFeedbackType.selectionClick')
+    .toList();
 
 Future<void> _pumpPlay(
   WidgetTester tester, {
@@ -58,6 +83,21 @@ Future<void> _pumpPlay(
   await progress.load();
   _progress = progress;
 
+  _buzzes = <Object?>[];
+  tester.binding.defaultBinaryMessenger
+      .setMockMethodCallHandler(SystemChannels.platform, (MethodCall call) async {
+    if (call.method == 'HapticFeedback.vibrate') {
+      _buzzes.add(call.arguments);
+    }
+    return null;
+  });
+  addTearDown(() => tester.binding.defaultBinaryMessenger
+      .setMockMethodCallHandler(SystemChannels.platform, null));
+
+  _audioSink = _RecordingSink();
+  final AudioService audio = AudioService(settings, sink: _audioSink);
+  addTearDown(audio.dispose);
+
   final Cabinet playing = cabinet ?? _serpent;
   // Injected, so the board is the same every run — which also means this test
   // owns it, where the shell would have owned one it made itself.
@@ -71,6 +111,8 @@ Future<void> _pumpPlay(
       providers: [
         ChangeNotifierProvider<SettingsService>.value(value: settings),
         ChangeNotifierProvider<ProgressService>.value(value: progress),
+        Provider<HapticService>.value(value: HapticService(settings)),
+        Provider<AudioService>.value(value: audio),
       ],
       child: MaterialApp(
         theme: AppTheme.dark,
@@ -220,6 +262,84 @@ void main() {
     await _close(tester);
   });
 
+  testWidgets('an apple and the wall each answer in their own way',
+      (WidgetTester tester) async {
+    // Sound is off on a fresh install, so a test that wants to watch the cues
+    // has to turn it on the way the player would.
+    await _pumpPlay(
+      tester,
+      stored: <String, Object>{AppSetting.cabinetAmbience.storageKey: true},
+    );
+    await _start(tester);
+    await _advance(tester);
+
+    // The run eats once and then dies: one light thud for the apple, one
+    // heavier one for the wall, and never the other way round.
+    expect(_runBuzzes, <String>[
+      'HapticFeedbackType.lightImpact',
+      'HapticFeedbackType.mediumImpact',
+    ]);
+    // The shell opened the cabinet, started the run, and named both moments.
+    expect(_audioSink.cues, containsAllInOrder(<ArcadeCue>[
+      ArcadeCue.runStart,
+      ArcadeCue.pickup,
+      ArcadeCue.gameOver,
+    ]));
+
+    await _close(tester);
+  });
+
+  testWidgets('a control answers, a key does not', (WidgetTester tester) async {
+    await _pumpPlay(
+      tester,
+      stored: <String, Object>{AppSetting.cabinetAmbience.storageKey: true},
+    );
+
+    await tester.tap(find.text('▲'));
+    await tester.pump();
+    expect(_buzzes, <String>['HapticFeedbackType.selectionClick']);
+    expect(_audioSink.cues.first, ArcadeCue.uiSelect);
+
+    // A keyboard is not a thumb on the glass, so it gets no buzz of its own.
+    final int beforeKey = _buzzes.length;
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pump();
+    expect(_buzzes.length, beforeKey);
+
+    await _close(tester);
+  });
+
+  testWidgets('the switch off leaves the run silent and still',
+      (WidgetTester tester) async {
+    await _pumpPlay(
+      tester,
+      stored: <String, Object>{AppSetting.hapticFeedback.storageKey: false},
+    );
+    await _start(tester);
+    await _advance(tester);
+
+    expect(find.text('GAME OVER'), findsOneWidget);
+    expect(_buzzes, isEmpty);
+    // Sound is off by default too, so nothing reached the sink either.
+    expect(_audioSink.cues, isEmpty);
+    expect(_audioSink.hum, isEmpty);
+
+    await _close(tester);
+  });
+
+  testWidgets('the hum comes up with the cabinet and down with it',
+      (WidgetTester tester) async {
+    await _pumpPlay(
+      tester,
+      stored: <String, Object>{AppSetting.cabinetAmbience.storageKey: true},
+    );
+
+    expect(_audioSink.hum, <bool>[true]);
+
+    await _close(tester);
+    expect(_audioSink.hum, <bool>[true, false]);
+  });
+
   testWidgets('a D-pad press starts the run from attract',
       (WidgetTester tester) async {
     await _pumpPlay(tester);
@@ -259,11 +379,15 @@ void main() {
 
   testWidgets('exit pops the shell', (WidgetTester tester) async {
     await _pumpPlay(tester);
+    final SettingsService settings = SettingsService();
+    await settings.load();
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider<SettingsService>.value(value: SettingsService()),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
           ChangeNotifierProvider<ProgressService>.value(value: _progress),
+          Provider<HapticService>.value(value: HapticService(settings)),
+          Provider<AudioService>.value(value: AudioService(settings)),
         ],
         child: MaterialApp(
           theme: AppTheme.dark,

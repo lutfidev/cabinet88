@@ -48,11 +48,6 @@ abstract final class AppTheme {
         thickness: AppBorderWidths.hairline,
         space: AppBorderWidths.hairline,
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: <TargetPlatform, PageTransitionsBuilder>{
-          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
-        },
-      ),
     );
   }
 

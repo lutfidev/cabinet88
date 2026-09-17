@@ -7,6 +7,8 @@ import '../games/arcade_game.dart';
 import '../games/game_catalog.dart';
 import '../games/placeholder_game.dart';
 import '../models/cabinet.dart';
+import '../services/audio_service.dart';
+import '../services/haptic_service.dart';
 import '../services/progress_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_theme.dart';
@@ -16,6 +18,7 @@ import '../widgets/play/play_field.dart';
 import '../widgets/play/play_hud.dart';
 import '../widgets/play/play_overlay.dart';
 import '../widgets/play/play_top_bar.dart';
+import '../widgets/rise_route.dart';
 
 /// Copy, verbatim from the design's play shell.
 const String _exit = '‹ EXIT';
@@ -66,7 +69,7 @@ class PlayScreen extends StatefulWidget {
 
   /// The route the detail screen's play button pushes.
   static Route<void> route(Cabinet cabinet, {ArcadeGame? game}) =>
-      MaterialPageRoute<void>(
+      RiseRoute<void>(
         builder: (BuildContext context) =>
             PlayScreen(cabinet: cabinet, game: game),
       );
@@ -89,12 +92,20 @@ class _PlayScreenState extends State<PlayScreen>
   late final CustomPainter _painter = _game.createPainter();
   late final Ticker _ticker = createTicker(_game.tick);
   late final ProgressService _progress = context.read<ProgressService>();
+  late final HapticService _haptics = context.read<HapticService>();
+  late final AudioService _audio = context.read<AudioService>();
 
   /// The nine cabinets with no game take no input — otherwise an arrow key
   /// would file a run against a cabinet that cannot be played.
   bool get _isDemo => !widget.cabinet.playable;
 
   GamePhase _lastPhase = GamePhase.attract;
+
+  /// What the HUD last showed. A score that went up during a live run is an
+  /// apple — which is all the shell needs to know to answer one, without
+  /// learning a single rule of the game it is hosting.
+  int _lastScore = 0;
+
   Offset? _swipeOrigin;
 
   @override
@@ -104,10 +115,14 @@ class _PlayScreenState extends State<PlayScreen>
     // behaviour, per the design notes — not a preference.
     _game.reset();
     _game.status.addListener(_followRun);
+    // The room hum belongs to the cabinet, not to the run: it comes up with
+    // the screen and goes down with it, if the switch allows it at all.
+    _audio.enterCabinet();
   }
 
   @override
   void dispose() {
+    _audio.leaveCabinet();
     _game.status.removeListener(_followRun);
     _ticker.dispose();
     if (_ownsGame) {
@@ -130,6 +145,16 @@ class _PlayScreenState extends State<PlayScreen>
       _ticker.stop();
     }
 
+    // Before the phase gate: a run can score several times without its phase
+    // moving at all. A tick that both scores and kills answers as a death,
+    // which is the louder of the two and the one that ends the run.
+    final int previousScore = _lastScore;
+    _lastScore = status.score;
+    if (status.score > previousScore && status.phase == GamePhase.playing) {
+      _haptics.pickup();
+      _audio.play(ArcadeCue.pickup);
+    }
+
     if (status.phase == _lastPhase) {
       return;
     }
@@ -138,17 +163,30 @@ class _PlayScreenState extends State<PlayScreen>
 
     if (status.phase == GamePhase.playing && previous != GamePhase.paused) {
       _progress.recordPlayed(widget.cabinet.id);
+      _audio.play(ArcadeCue.runStart);
     } else if (status.phase == GamePhase.over) {
       _progress.recordScore(widget.cabinet.id, status.score);
+      _haptics.over();
+      _audio.play(ArcadeCue.gameOver);
     }
+  }
+
+  /// What a pressed control gives back. Keys do not get one: there is no
+  /// thumb on the glass to feel it.
+  void _pressFeedback() {
+    _haptics.tap();
+    _audio.play(ArcadeCue.uiSelect);
   }
 
   /// A direction from any control. Before a run starts, the first one starts
   /// it — the design's own `turn()` does the same, which is what makes the
   /// idle note ("swipe, tap the D-pad, or press an arrow key to begin") true.
-  void _handleInput(GameInput input) {
+  void _handleInput(GameInput input, {bool silent = false}) {
     if (_isDemo) {
       return;
+    }
+    if (!silent) {
+      _pressFeedback();
     }
     if (_game.status.value.phase.isRunning) {
       _game.input(input);
@@ -163,6 +201,7 @@ class _PlayScreenState extends State<PlayScreen>
     if (_isDemo) {
       return;
     }
+    _pressFeedback();
     if (_game.status.value.phase == GamePhase.paused) {
       _game.resume();
     } else {
@@ -194,7 +233,7 @@ class _PlayScreenState extends State<PlayScreen>
     if (input == null) {
       return KeyEventResult.ignored;
     }
-    _handleInput(input);
+    _handleInput(input, silent: true);
     return KeyEventResult.handled;
   }
 

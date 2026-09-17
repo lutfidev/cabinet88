@@ -4,6 +4,8 @@ import 'package:cabinet88/models/leaderboard_entry.dart';
 import 'package:cabinet88/models/trophy.dart';
 import 'package:cabinet88/screens/cabinet_detail_screen.dart';
 import 'package:cabinet88/screens/play_screen.dart';
+import 'package:cabinet88/services/audio_service.dart';
+import 'package:cabinet88/services/haptic_service.dart';
 import 'package:cabinet88/services/progress_service.dart';
 import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/services/trophy_service.dart';
@@ -51,6 +53,9 @@ Future<void> _pumpDetail(
           value: service ?? ProgressTrophyService(progress),
         ),
         ChangeNotifierProvider<SettingsService>.value(value: settings),
+        // The play button routes into the shell, which reads both of these.
+        Provider<HapticService>.value(value: HapticService(settings)),
+        Provider<AudioService>.value(value: AudioService(settings)),
       ],
       child: MaterialApp(
         theme: AppTheme.dark,

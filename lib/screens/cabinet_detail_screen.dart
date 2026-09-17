@@ -8,7 +8,7 @@ import '../services/trophy_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/detail_header_card.dart';
 import '../widgets/layouts/tabbed_detail_layout.dart';
-import '../widgets/screen_rise.dart';
+import '../widgets/rise_route.dart';
 import '../widgets/top_bar_button.dart';
 import 'play_screen.dart';
 
@@ -28,7 +28,7 @@ class CabinetDetailScreen extends StatefulWidget {
   final Cabinet cabinet;
 
   /// The route home pushes.
-  static Route<void> route(Cabinet cabinet) => MaterialPageRoute<void>(
+  static Route<void> route(Cabinet cabinet) => RiseRoute<void>(
         builder: (BuildContext context) => CabinetDetailScreen(cabinet: cabinet),
       );
 
@@ -65,30 +65,30 @@ class _CabinetDetailScreenState extends State<CabinetDetailScreen> {
         child: Material(
           type: MaterialType.transparency,
           child: SafeArea(
-            child: ScreenRise(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  const _TopBar(),
-                  Padding(
-                    padding: AppInsets.gutter,
-                    child: DetailHeaderCard(
-                      cabinet: cabinet,
-                      onPlay: () => Navigator.of(context)
-                          .push(PlayScreen.route(cabinet)),
-                    ),
+            // No ScreenRise here: RiseRoute plays the design's rise as this
+            // route's own transition, and twice would double it.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const _TopBar(),
+                Padding(
+                  padding: AppInsets.gutter,
+                  child: DetailHeaderCard(
+                    cabinet: cabinet,
+                    onPlay: () => Navigator.of(context)
+                        .push(PlayScreen.route(cabinet)),
                   ),
-                  const SizedBox(height: AppSpacing.s18),
-                  Expanded(
-                    child: TabbedDetailLayout(
-                      cabinet: cabinet,
-                      best: best,
-                      trophies: TrophyCatalog.featured,
-                      trophyService: trophyService,
-                    ),
+                ),
+                const SizedBox(height: AppSpacing.s18),
+                Expanded(
+                  child: TabbedDetailLayout(
+                    cabinet: cabinet,
+                    best: best,
+                    trophies: TrophyCatalog.featured,
+                    trophyService: trophyService,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

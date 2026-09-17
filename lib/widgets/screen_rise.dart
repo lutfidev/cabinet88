@@ -2,10 +2,34 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-/// The design's `avRise`: a screen body fades up ten pixels on entry.
+/// The design's `avRise`, driven by any 0→1 animation: a fade up ten pixels.
 ///
-/// Shared by every screen that carries the animation, so the curve and the
-/// distance are stated once.
+/// Stated once here, and used twice — by [ScreenRise] for the screen that is
+/// never pushed, and by `RiseRoute` for every screen that is. The curve and
+/// the distance are the design's (`avRise .3s ease both`).
+Widget riseTransition(Animation<double> animation, Widget child) {
+  final Animation<double> eased =
+      CurveTween(curve: Curves.ease).animate(animation);
+  return FadeTransition(
+    opacity: eased,
+    child: AnimatedBuilder(
+      animation: eased,
+      builder: (BuildContext context, Widget? child) => Transform.translate(
+        offset: Offset(0, AppSpacing.s10 * (1 - eased.value)),
+        child: child,
+      ),
+      child: child,
+    ),
+  );
+}
+
+/// [riseTransition] on a clock of its own, for a screen with no route
+/// animation behind it.
+///
+/// Only the home screen needs this: it is the app's first route, so nothing
+/// pushes it and there is no route transition to ride. Every other screen gets
+/// the same motion from `RiseRoute` instead — wrapping one of those in this
+/// widget would play the rise twice.
 class ScreenRise extends StatefulWidget {
   const ScreenRise({super.key, required this.child});
 
@@ -22,9 +46,6 @@ class _ScreenRiseState extends State<ScreenRise>
     duration: AppDurations.screenRise,
   )..forward();
 
-  late final Animation<double> _eased =
-      CurvedAnimation(parent: _controller, curve: Curves.ease);
-
   @override
   void dispose() {
     _controller.dispose();
@@ -32,17 +53,6 @@ class _ScreenRiseState extends State<ScreenRise>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _eased,
-      child: AnimatedBuilder(
-        animation: _eased,
-        builder: (BuildContext context, Widget? child) => Transform.translate(
-          offset: Offset(0, AppSpacing.s10 * (1 - _eased.value)),
-          child: child,
-        ),
-        child: widget.child,
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      riseTransition(_controller, widget.child);
 }
