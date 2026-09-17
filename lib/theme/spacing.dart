@@ -142,6 +142,15 @@ abstract final class AppInsets {
     AppSpacing.s24,
   );
 
+  /// Demo mode's body, where a playable cabinet has the field (`10px 16px
+  /// 28px`). The design gives it its own padding, not the play body's.
+  static const EdgeInsets demoBody = EdgeInsets.fromLTRB(
+    AppSpacing.s16,
+    AppSpacing.s10,
+    AppSpacing.s16,
+    AppSpacing.s28,
+  );
+
   /// The frame around the play field (`10px`).
   static const EdgeInsets playField = EdgeInsets.all(AppSpacing.s10);
 

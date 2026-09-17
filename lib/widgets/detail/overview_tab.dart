@@ -5,9 +5,16 @@ import '../../theme/app_theme.dart';
 
 /// The Overview tab: the cabinet's copy, then its three stat tiles.
 class OverviewTab extends StatelessWidget {
-  const OverviewTab({super.key, required this.cabinet});
+  const OverviewTab({
+    super.key,
+    required this.cabinet,
+    required this.best,
+  });
 
   final Cabinet cabinet;
+
+  /// The player's own best. A cabinet nobody has scored on shows a dash.
+  final int best;
 
   /// The stat labels, as the design writes them.
   static const String bestLabel = 'Your best';
@@ -28,7 +35,7 @@ class OverviewTab extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _StatTile(
-                  value: cabinet.highScoreLabel,
+                  value: Cabinet.scoreLabel(best),
                   label: bestLabel,
                 ),
               ),

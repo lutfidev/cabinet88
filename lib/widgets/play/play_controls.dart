@@ -22,16 +22,12 @@ class PlayControls extends StatelessWidget {
     required this.actionLabel,
     required this.onDirection,
     required this.onAction,
-    this.onActionLongPress,
   });
 
   final bool showDpad;
   final String actionLabel;
   final ValueChanged<GameInput> onDirection;
   final VoidCallback onAction;
-
-  /// Phase 4 only: ends the placeholder run so game over can be inspected.
-  final VoidCallback? onActionLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +38,7 @@ class PlayControls extends StatelessWidget {
           _Dpad(onDirection: onDirection),
           const SizedBox(width: AppSpacing.s26),
         ],
-        _ActionButton(
-          label: actionLabel,
-          onTap: onAction,
-          onLongPress: onActionLongPress,
-        ),
+        _ActionButton(label: actionLabel, onTap: onAction),
       ],
     );
   }
@@ -192,17 +184,15 @@ class _DpadKeyState extends State<_DpadKey> {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.label, required this.onTap, this.onLongPress});
+  const _ActionButton({required this.label, required this.onTap});
 
   final String label;
   final VoidCallback onTap;
-  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onLongPress,
       child: Container(
         width: AppSizes.actionButton,
         height: AppSizes.actionButton,

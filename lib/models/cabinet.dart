@@ -74,9 +74,14 @@ class Cabinet {
   /// in v1; the other nine show the demo-mode placeholder.
   final bool playable;
 
-  /// High score as the design formats it: grouped thousands, or an em dash
-  /// when the cabinet has never been scored.
-  String get highScoreLabel => highScore == 0 ? '—' : formatScore(highScore);
+  /// The catalog's seeded high score, as the design formats it. Where a real
+  /// best exists — Serpent 88's — the UI reads that instead, through
+  /// [scoreLabel].
+  String get highScoreLabel => scoreLabel(highScore);
+
+  /// A score as the design writes it: grouped thousands, or an em dash when
+  /// there is nothing to show.
+  static String scoreLabel(int score) => score == 0 ? '—' : formatScore(score);
 
   /// `24680` becomes `24,680`, matching `toLocaleString('en-US')`.
   static String formatScore(int value) {

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/cabinet.dart';
 import '../models/trophy.dart';
+import '../services/progress_service.dart';
 import '../services/trophy_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/detail_header_card.dart';
@@ -21,7 +22,7 @@ const String _starGlyph = '☆';
 /// The header and the tab strip are pinned; only the open tab scrolls. The
 /// design scrolls the header away with the body, but that can put the play
 /// button off screen, which the phase guardrail rules out.
-class CabinetDetailScreen extends StatelessWidget {
+class CabinetDetailScreen extends StatefulWidget {
   const CabinetDetailScreen({super.key, required this.cabinet});
 
   final Cabinet cabinet;
@@ -32,8 +33,29 @@ class CabinetDetailScreen extends StatelessWidget {
       );
 
   @override
+  State<CabinetDetailScreen> createState() => _CabinetDetailScreenState();
+}
+
+class _CabinetDetailScreenState extends State<CabinetDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Opening the file is what the Curator trophy counts. Filed once this
+    // frame is out: progress tells the UI when it changes, and saying so
+    // while the tree is still being built would mark it dirty mid-build.
+    final ProgressService progress = context.read<ProgressService>();
+    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+      progress.recordFileRead(widget.cabinet.id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final Cabinet cabinet = widget.cabinet;
     final TrophyService trophyService = context.watch<TrophyService>();
+    // The player's own best, not the catalog's seeded number.
+    final int best = context.select<ProgressService, int>(
+        (ProgressService p) => p.bestFor(cabinet.id));
 
     return Scaffold(
       body: DecoratedBox(
@@ -60,6 +82,7 @@ class CabinetDetailScreen extends StatelessWidget {
                   Expanded(
                     child: TabbedDetailLayout(
                       cabinet: cabinet,
+                      best: best,
                       trophies: TrophyCatalog.featured,
                       trophyService: trophyService,
                     ),

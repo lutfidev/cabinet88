@@ -29,11 +29,15 @@ class TabbedDetailLayout extends StatefulWidget {
   const TabbedDetailLayout({
     super.key,
     required this.cabinet,
+    required this.best,
     required this.trophies,
     required this.trophyService,
   });
 
   final Cabinet cabinet;
+
+  /// The player's best on this cabinet. Zero until they score one.
+  final int best;
   final List<Trophy> trophies;
   final TrophyService trophyService;
 
@@ -63,7 +67,10 @@ class _TabbedDetailLayoutState extends State<TabbedDetailLayout> {
             children: <Widget>[
               _TabView(
                 tab: DetailTab.overview,
-                child: OverviewTab(cabinet: widget.cabinet),
+                child: OverviewTab(
+                  cabinet: widget.cabinet,
+                  best: widget.best,
+                ),
               ),
               _TabView(
                 tab: DetailTab.scores,

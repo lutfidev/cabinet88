@@ -4,11 +4,12 @@ import 'package:flutter/rendering.dart';
 import 'arcade_game.dart';
 import 'test_pattern_painter.dart';
 
-/// The shell's stand-in until a cabinet brings a real game.
+/// The shell's stand-in for a cabinet with no game of its own.
 ///
 /// It moves between phases and nothing else: no rules, no scoring, no clock.
-/// [tick] and [input] are deliberately empty — phase 4 ships no game logic, and
-/// the viewport shows a static test pattern.
+/// [tick] and [input] are deliberately empty. The nine cabinets that have no
+/// game show demo mode rather than a field, so in the shipped app this only
+/// keeps the HUD supplied; a game arriving for one of them replaces it.
 class PlaceholderGame implements ArcadeGame {
   final ValueNotifier<GameStatus> _status =
       ValueNotifier<GameStatus>(const GameStatus());
@@ -45,15 +46,6 @@ class PlaceholderGame implements ArcadeGame {
 
   @override
   void reset() => _status.value = const GameStatus();
-
-  /// Ends the run so the game-over state can be inspected without a game to
-  /// lose. The shell reaches this from a long press on the action button, and
-  /// only while the placeholder is what is attached — phase 5 deletes both.
-  void endRun() {
-    if (_status.value.phase.isRunning) {
-      _status.value = _status.value.copyWith(phase: GamePhase.over);
-    }
-  }
 
   @override
   void dispose() => _status.dispose();

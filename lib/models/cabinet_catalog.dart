@@ -161,8 +161,11 @@ abstract final class CabinetCatalog {
     ),
   ];
 
+  /// The one cabinet with a real game behind the shell in v1.
+  static const String serpentId = 'serpent';
+
   /// The cabinet the home screen features, and the only one playable in v1.
-  static Cabinet get featured => all.first;
+  static Cabinet get featured => byId(serpentId);
 
   static Cabinet byId(String id) =>
       all.firstWhere((Cabinet c) => c.id == id, orElse: () => all.first);

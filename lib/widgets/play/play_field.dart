@@ -37,7 +37,13 @@ class PlayField extends StatelessWidget {
             child: CrtOverlay(
               tone: CrtTone.art,
               vignette: false,
-              child: CustomPaint(painter: painter, isComplex: true),
+              // A live game repaints every step, so the layer is never worth
+            // caching — `willChange` keeps the raster cache out of the way.
+            child: CustomPaint(
+              painter: painter,
+              isComplex: true,
+              willChange: true,
+            ),
             ),
           ),
           if (overlay != null) Positioned.fill(child: overlay!),

@@ -4,10 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../games/arcade_game.dart';
+import '../games/game_catalog.dart';
 import '../games/placeholder_game.dart';
 import '../models/cabinet.dart';
+import '../services/progress_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/play/demo_mode.dart';
 import '../widgets/play/play_controls.dart';
 import '../widgets/play/play_field.dart';
 import '../widgets/play/play_hud.dart';
@@ -48,16 +51,17 @@ final Map<LogicalKeyboardKey, GameInput> _keyMap = <LogicalKeyboardKey, GameInpu
 /// The shell all ten cabinets run inside.
 ///
 /// It owns the chrome, the ticker and the input plumbing, and knows nothing
-/// about any particular game: everything it draws in the viewport comes from
-/// the [ArcadeGame] it was handed. With none, it shows a static test pattern —
-/// phase 4 ships no game logic.
+/// about any particular game: what it draws in the viewport comes from the
+/// [ArcadeGame] it was handed, and which game that is comes from
+/// [GameCatalog]. A cabinet with no game gets demo mode instead of a field.
 class PlayScreen extends StatefulWidget {
   const PlayScreen({super.key, required this.cabinet, this.game});
 
   final Cabinet cabinet;
 
-  /// The cabinet's game. Null until a cabinet brings one, which is every
-  /// cabinet in phase 4.
+  /// An injected game, for a test that needs a predictable one. Left null,
+  /// the shell asks [GameCatalog] for this cabinet's game and owns what it
+  /// gets back.
   final ArcadeGame? game;
 
   /// The route the detail screen's play button pushes.
@@ -73,14 +77,24 @@ class PlayScreen extends StatefulWidget {
 
 class _PlayScreenState extends State<PlayScreen>
     with SingleTickerProviderStateMixin {
-  late final ArcadeGame _game = widget.game ?? PlaceholderGame();
+  /// This cabinet's game, or the phase machine behind the test pattern when
+  /// this build ships none for it.
+  late final ArcadeGame _game = widget.game ??
+      GameCatalog.createFor(widget.cabinet) ??
+      PlaceholderGame();
 
   /// Only a game the shell made is a game the shell may dispose.
   late final bool _ownsGame = widget.game == null;
 
   late final CustomPainter _painter = _game.createPainter();
   late final Ticker _ticker = createTicker(_game.tick);
+  late final ProgressService _progress = context.read<ProgressService>();
 
+  /// The nine cabinets with no game take no input — otherwise an arrow key
+  /// would file a run against a cabinet that cannot be played.
+  bool get _isDemo => !widget.cabinet.playable;
+
+  GamePhase _lastPhase = GamePhase.attract;
   Offset? _swipeOrigin;
 
   @override
@@ -89,12 +103,12 @@ class _PlayScreenState extends State<PlayScreen>
     // Every launch of the play screen starts at the attract state. Fixed
     // behaviour, per the design notes — not a preference.
     _game.reset();
-    _game.status.addListener(_followPhase);
+    _game.status.addListener(_followRun);
   }
 
   @override
   void dispose() {
-    _game.status.removeListener(_followPhase);
+    _game.status.removeListener(_followRun);
     _ticker.dispose();
     if (_ownsGame) {
       _game.dispose();
@@ -103,13 +117,29 @@ class _PlayScreenState extends State<PlayScreen>
   }
 
   /// The ticker runs while a run is live and at no other time, so a paused or
-  /// finished cabinet costs nothing.
-  void _followPhase() {
-    final bool shouldTick = _game.status.value.phase == GamePhase.playing;
+  /// finished cabinet costs nothing. The same signal files progress: a run
+  /// that starts marks the cabinet played, and a run that ends offers its
+  /// score to the best.
+  void _followRun() {
+    final GameStatus status = _game.status.value;
+
+    final bool shouldTick = status.phase == GamePhase.playing;
     if (shouldTick && !_ticker.isActive) {
       _ticker.start();
     } else if (!shouldTick && _ticker.isActive) {
       _ticker.stop();
+    }
+
+    if (status.phase == _lastPhase) {
+      return;
+    }
+    final GamePhase previous = _lastPhase;
+    _lastPhase = status.phase;
+
+    if (status.phase == GamePhase.playing && previous != GamePhase.paused) {
+      _progress.recordPlayed(widget.cabinet.id);
+    } else if (status.phase == GamePhase.over) {
+      _progress.recordScore(widget.cabinet.id, status.score);
     }
   }
 
@@ -117,6 +147,9 @@ class _PlayScreenState extends State<PlayScreen>
   /// it — the design's own `turn()` does the same, which is what makes the
   /// idle note ("swipe, tap the D-pad, or press an arrow key to begin") true.
   void _handleInput(GameInput input) {
+    if (_isDemo) {
+      return;
+    }
     if (_game.status.value.phase.isRunning) {
       _game.input(input);
     } else {
@@ -127,6 +160,9 @@ class _PlayScreenState extends State<PlayScreen>
   /// The action button and every overlay call to action: resume a paused run,
   /// otherwise begin a fresh one.
   void _handleAction() {
+    if (_isDemo) {
+      return;
+    }
     if (_game.status.value.phase == GamePhase.paused) {
       _game.resume();
     } else {
@@ -146,8 +182,12 @@ class _PlayScreenState extends State<PlayScreen>
     }
   }
 
+  /// Demo mode's way out: swap this cabinet for the one that plays.
+  void _openPlayable() => Navigator.of(context)
+      .pushReplacement(PlayScreen.route(GameCatalog.playableCabinet));
+
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) {
+    if (event is! KeyDownEvent || _isDemo) {
       return KeyEventResult.ignored;
     }
     final GameInput? input = _keyMap[event.logicalKey];
@@ -183,6 +223,10 @@ class _PlayScreenState extends State<PlayScreen>
   Widget build(BuildContext context) {
     final bool showDpad = context
         .select<SettingsService, bool>((SettingsService s) => s.onScreenDpad);
+    // The HI readout is the player's own best, not the catalog's seeded one:
+    // a cabinet nobody has scored on shows a dash.
+    final int best = context.select<ProgressService, int>(
+        (ProgressService p) => p.bestFor(widget.cabinet.id));
 
     return Scaffold(
       backgroundColor: AppColors.playBackground,
@@ -209,47 +253,28 @@ class _PlayScreenState extends State<PlayScreen>
                     levelLabel: _levelLabel,
                     level: status.level.toString(),
                     bestLabel: _bestLabel,
-                    best: widget.cabinet.highScoreLabel,
+                    best: Cabinet.scoreLabel(best),
                   ),
                   Expanded(
-                    child: Padding(
-                      padding: AppInsets.playBody,
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: 1,
-                                child: Listener(
-                                  onPointerDown: _onPointerDown,
-                                  onPointerUp: _onPointerUp,
-                                  child: PlayField(
-                                    painter: _painter,
-                                    overlay: _overlayFor(status),
-                                  ),
-                                ),
-                              ),
+                    child: _isDemo
+                        ? SingleChildScrollView(
+                            child: DemoMode(
+                              cabinet: widget.cabinet,
+                              playable: GameCatalog.playableCabinet,
+                              onTryPlayable: _openPlayable,
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.s18),
-                          PlayControls(
+                          )
+                        : _PlayBody(
+                            painter: _painter,
+                            overlay: _overlayFor(status),
                             showDpad: showDpad,
                             actionLabel:
                                 status.phase.isRunning ? _reset : _start,
+                            onPointerDown: _onPointerDown,
+                            onPointerUp: _onPointerUp,
                             onDirection: _handleInput,
                             onAction: _handleAction,
-                            onActionLongPress: _endPlaceholderRun,
                           ),
-                          const SizedBox(height: AppSpacing.s18),
-                          Text(
-                            _footer,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.caption
-                                .copyWith(color: AppColors.textDisabled),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               );
@@ -291,11 +316,63 @@ class _PlayScreenState extends State<PlayScreen>
         );
     }
   }
+}
 
-  /// Phase 4 only. With no game to lose, a long press on the action button is
-  /// the way to see the game-over state. It goes when Serpent 88 lands.
-  VoidCallback? get _endPlaceholderRun {
-    final ArcadeGame game = _game;
-    return game is PlaceholderGame ? game.endRun : null;
+/// The field, the controls and the footer — what a cabinet with a game shows.
+class _PlayBody extends StatelessWidget {
+  const _PlayBody({
+    required this.painter,
+    required this.overlay,
+    required this.showDpad,
+    required this.actionLabel,
+    required this.onPointerDown,
+    required this.onPointerUp,
+    required this.onDirection,
+    required this.onAction,
+  });
+
+  final CustomPainter painter;
+  final Widget? overlay;
+  final bool showDpad;
+  final String actionLabel;
+  final PointerDownEventListener onPointerDown;
+  final PointerUpEventListener onPointerUp;
+  final ValueChanged<GameInput> onDirection;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: AppInsets.playBody,
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Listener(
+                  onPointerDown: onPointerDown,
+                  onPointerUp: onPointerUp,
+                  child: PlayField(painter: painter, overlay: overlay),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s18),
+          PlayControls(
+            showDpad: showDpad,
+            actionLabel: actionLabel,
+            onDirection: onDirection,
+            onAction: onAction,
+          ),
+          const SizedBox(height: AppSpacing.s18),
+          Text(
+            _footer,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textDisabled),
+          ),
+        ],
+      ),
+    );
   }
 }

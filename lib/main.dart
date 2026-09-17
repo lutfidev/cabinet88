@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/home_screen.dart';
+import 'services/progress_service.dart';
 import 'services/settings_service.dart';
 import 'services/trophy_service.dart';
 import 'theme/app_theme.dart';
@@ -11,26 +12,37 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Settings are read before the first frame, so nothing renders with a
   // default it is about to replace — a scanline overlay that arrived one frame
-  // late would flicker on every launch.
+  // late would flicker on every launch. Progress comes up with it, so no
+  // screen shows a dash where a real best score exists.
   final SettingsService settings = SettingsService();
-  await settings.load();
-  runApp(Cabinet88App(settings: settings));
+  final ProgressService progress = ProgressService();
+  await Future.wait<void>(<Future<void>>[settings.load(), progress.load()]);
+  runApp(Cabinet88App(settings: settings, progress: progress));
 }
 
 /// App entry. UI logic lives in the screens, not here.
 class Cabinet88App extends StatelessWidget {
-  const Cabinet88App({super.key, required this.settings});
+  const Cabinet88App({
+    super.key,
+    required this.settings,
+    required this.progress,
+  });
 
   final SettingsService settings;
+  final ProgressService progress;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // The one service the UI reads progress through. Phase 5 replaces the
-        // implementation, not the seam.
-        Provider<TrophyService>.value(value: const SeededTrophyService()),
+        ChangeNotifierProvider<ProgressService>.value(value: progress),
         ChangeNotifierProvider<SettingsService>.value(value: settings),
+        // Every trophy is derived, never stored, so the service is rebuilt
+        // whenever progress moves and the case updates with it.
+        ProxyProvider<ProgressService, TrophyService>(
+          update: (BuildContext _, ProgressService stored, TrophyService? _) =>
+              ProgressTrophyService(stored),
+        ),
       ],
       child: MaterialApp(
         title: 'Cabinet88',

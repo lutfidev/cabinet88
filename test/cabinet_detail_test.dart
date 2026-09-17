@@ -4,6 +4,7 @@ import 'package:cabinet88/models/leaderboard_entry.dart';
 import 'package:cabinet88/models/trophy.dart';
 import 'package:cabinet88/screens/cabinet_detail_screen.dart';
 import 'package:cabinet88/screens/play_screen.dart';
+import 'package:cabinet88/services/progress_service.dart';
 import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/services/trophy_service.dart';
 import 'package:cabinet88/theme/app_theme.dart';
@@ -14,32 +15,41 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// A service with nothing unlocked, to prove the rows follow the service and
-/// not the catalog.
-class _AllLockedTrophyService implements TrophyService {
-  const _AllLockedTrophyService();
+/// A service with everything unlocked, to prove the rows follow the service
+/// and nothing else.
+class _AllUnlockedTrophyService implements TrophyService {
+  const _AllUnlockedTrophyService();
 
   @override
-  bool isUnlocked(Trophy trophy) => false;
+  bool isUnlocked(Trophy trophy) => true;
 }
 
 Cabinet get _serpent => CabinetCatalog.all.first;
 Cabinet get _minefield =>
     CabinetCatalog.all.firstWhere((Cabinet c) => c.id == 'minefield');
 
+/// Pumps the cabinet file. [stored] seeds progress, which is where both the
+/// best score and every trophy now come from; [service] overrides the derived
+/// trophy service where a test needs a fixed answer.
 Future<void> _pumpDetail(
   WidgetTester tester,
   Cabinet cabinet, {
-  TrophyService service = const SeededTrophyService(),
+  TrophyService? service,
+  Map<String, Object> stored = const <String, Object>{},
 }) async {
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(stored);
   final SettingsService settings = SettingsService();
+  final ProgressService progress = ProgressService();
   await settings.load();
+  await progress.load();
 
   await tester.pumpWidget(
     MultiProvider(
       providers: [
-        Provider<TrophyService>.value(value: service),
+        ChangeNotifierProvider<ProgressService>.value(value: progress),
+        Provider<TrophyService>.value(
+          value: service ?? ProgressTrophyService(progress),
+        ),
         ChangeNotifierProvider<SettingsService>.value(value: settings),
       ],
       child: MaterialApp(
@@ -105,7 +115,9 @@ void main() {
 
     expect(find.text('${_serpent.blurb} ${_serpent.note}'), findsOneWidget);
     expect(find.text('Your best'), findsOneWidget);
-    expect(find.text('24,680'), findsOneWidget);
+    // Nothing has been played, so the stat tile is a dash — the catalog's
+    // 24,680 is the leaderboard's mock, not the player's best.
+    expect(find.text('—'), findsOneWidget);
     expect(find.text('Runs played'), findsOneWidget);
     expect(find.text('412'), findsOneWidget);
     expect(find.text('Released'), findsOneWidget);
@@ -138,15 +150,33 @@ void main() {
     expect(find.text('24,680'), findsWidgets);
   });
 
+  testWidgets('your best reads the score you actually set',
+      (WidgetTester tester) async {
+    await _pumpDetail(
+      tester,
+      _serpent,
+      stored: <String, Object>{'${ProgressService.bestPrefix}serpent': 1240},
+    );
+
+    expect(find.text('1,240'), findsOneWidget);
+  });
+
   testWidgets('both locked and unlocked trophies render',
       (WidgetTester tester) async {
-    await _pumpDetail(tester, _serpent);
+    // One cabinet played, which is exactly what First Coin asks for.
+    await _pumpDetail(
+      tester,
+      _serpent,
+      stored: <String, Object>{
+        ProgressService.playedKey: <String>['serpent'],
+      },
+    );
     await tester.tap(find.text(DetailTab.trophies.label));
     await tester.pumpAndSettle();
 
     expect(find.byType(Opacity), findsNWidgets(TrophyCatalog.featured.length));
 
-    // First Coin is unlocked in the design's mock; No Guessing is not.
+    // First Coin is earned; No Guessing belongs to a cabinet with no game.
     expect(_rowOpacity(tester, 'First Coin'), 1);
     expect(_glyphColor(tester, '1'), AppColors.accentHighlight);
 
@@ -156,18 +186,32 @@ void main() {
 
   testWidgets('unlock state follows the service, not the catalog',
       (WidgetTester tester) async {
+    // Nothing has been played, so every derived trophy would be locked. The
+    // rows follow the service instead.
     await _pumpDetail(
       tester,
       _serpent,
-      service: const _AllLockedTrophyService(),
+      service: const _AllUnlockedTrophyService(),
     );
     await tester.tap(find.text(DetailTab.trophies.label));
     await tester.pumpAndSettle();
 
     for (final Trophy trophy in TrophyCatalog.featured) {
-      expect(_rowOpacity(tester, trophy.name), AppOpacities.lockedDetail);
-      expect(_glyphColor(tester, trophy.glyph), AppColors.textLocked);
+      expect(_rowOpacity(tester, trophy.name), 1);
+      expect(_glyphColor(tester, trophy.glyph), AppColors.accentHighlight);
     }
+  });
+
+  testWidgets('opening the file counts towards Curator',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    await _pumpDetail(tester, _serpent);
+
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+    expect(
+      preferences.getStringList(ProgressService.filesReadKey),
+      <String>['serpent'],
+    );
   });
 
   testWidgets('each tab keeps its own scroll position',

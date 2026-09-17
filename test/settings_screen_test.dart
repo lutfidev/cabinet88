@@ -1,5 +1,6 @@
 import 'package:cabinet88/main.dart';
 import 'package:cabinet88/screens/settings_screen.dart';
+import 'package:cabinet88/services/progress_service.dart';
 import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/theme/app_theme.dart';
 import 'package:cabinet88/widgets/crt_overlay.dart';
@@ -17,6 +18,13 @@ Future<SettingsService> _loaded([Map<String, Object> stored = const <String, Obj
   final SettingsService settings = SettingsService();
   await settings.load();
   return settings;
+}
+
+/// Progress for the whole-app tests. Empty — none of them plays anything.
+Future<ProgressService> _progress() async {
+  final ProgressService progress = ProgressService();
+  await progress.load();
+  return progress;
 }
 
 Future<SettingsService> _pumpSettings(WidgetTester tester) async {
@@ -76,7 +84,9 @@ void main() {
   testWidgets('the CRT overlay follows the switch, with no restart',
       (WidgetTester tester) async {
     final SettingsService settings = await _loaded();
-    await tester.pumpWidget(Cabinet88App(settings: settings));
+    await tester.pumpWidget(
+      Cabinet88App(settings: settings, progress: await _progress()),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byKey(CrtOverlay.scanlineKey), findsOneWidget);
@@ -95,14 +105,18 @@ void main() {
     final SettingsService settings = await _loaded(<String, Object>{
       AppSetting.crtScanlines.storageKey: false,
     });
-    await tester.pumpWidget(Cabinet88App(settings: settings));
+    await tester.pumpWidget(
+      Cabinet88App(settings: settings, progress: await _progress()),
+    );
 
     // Before any settling: nothing flickers on, not even for one frame.
     expect(find.byKey(CrtOverlay.scanlineKey), findsNothing);
   });
 
   testWidgets('the home avatar opens settings', (WidgetTester tester) async {
-    await tester.pumpWidget(Cabinet88App(settings: await _loaded()));
+    await tester.pumpWidget(
+      Cabinet88App(settings: await _loaded(), progress: await _progress()),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(

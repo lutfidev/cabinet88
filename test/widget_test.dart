@@ -1,6 +1,7 @@
 import 'package:cabinet88/main.dart';
 import 'package:cabinet88/models/cabinet_catalog.dart';
 import 'package:cabinet88/screens/cabinet_detail_screen.dart';
+import 'package:cabinet88/services/progress_service.dart';
 import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/theme/app_theme.dart';
 import 'package:cabinet88/widgets/cabinet_tile.dart';
@@ -8,13 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The app now reads its settings before the first frame, so a test has to
-/// hand it a loaded service just as `main()` does.
+/// The app reads settings and progress before the first frame, so a test has
+/// to hand it loaded services just as `main()` does.
 Future<Cabinet88App> _app() async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SettingsService settings = SettingsService();
+  final ProgressService progress = ProgressService();
   await settings.load();
-  return Cabinet88App(settings: settings);
+  await progress.load();
+  return Cabinet88App(settings: settings, progress: progress);
 }
 
 void main() {
