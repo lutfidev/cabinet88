@@ -41,6 +41,9 @@ dependencies:
   # Press Start 2P and Space Grotesk, the two faces in the design.
   google_fonts: ^6.2.1
 
+  # Settings persistence. The only thing Cabinet88 writes to disk in phase 4.
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -8,6 +8,7 @@ import '../widgets/pixel_sprite.dart';
 import '../widgets/screen_rise.dart';
 import '../widgets/sprite_maps.dart';
 import 'cabinet_detail_screen.dart';
+import 'settings_screen.dart';
 
 /// Copy, verbatim from the design.
 const String _greeting = 'GOOD EVENING';
@@ -78,29 +79,33 @@ class _GreetingHeader extends StatelessWidget {
   }
 }
 
-/// The design taps this through to a profile screen. There is no profile
-/// screen in the architecture, so it renders and does nothing for now.
+/// The design taps this through to a profile screen. The architecture has no
+/// profile screen, but it has settings, and this is the only way into them
+/// until the bottom nav exists.
 class _AvatarButton extends StatelessWidget {
   const _AvatarButton();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: AppSizes.avatarButton,
-      height: AppSizes.avatarButton,
-      decoration: BoxDecoration(
-        color: AppColors.secondaryTintFill,
-        borderRadius: AppBorderRadius.tile,
-        border: Border.all(
-          color: AppColors.secondaryTintBorder,
-          width: AppBorderWidths.hairline,
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(SettingsScreen.route()),
+      child: Container(
+        width: AppSizes.avatarButton,
+        height: AppSizes.avatarButton,
+        decoration: BoxDecoration(
+          color: AppColors.secondaryTintFill,
+          borderRadius: AppBorderRadius.tile,
+          border: Border.all(
+            color: AppColors.secondaryTintBorder,
+            width: AppBorderWidths.hairline,
+          ),
         ),
-      ),
-      child: const Center(
-        child: PixelSprite(
-          spriteId: SpriteMaps.avatar,
-          pixelSize: AppSizes.spriteNav,
-          glow: AppColors.accentSecondary,
+        child: const Center(
+          child: PixelSprite(
+            spriteId: SpriteMaps.avatar,
+            pixelSize: AppSizes.spriteNav,
+            glow: AppColors.accentSecondary,
+          ),
         ),
       ),
     );

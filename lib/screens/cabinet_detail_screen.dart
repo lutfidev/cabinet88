@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/detail_header_card.dart';
 import '../widgets/layouts/tabbed_detail_layout.dart';
 import '../widgets/screen_rise.dart';
+import '../widgets/top_bar_button.dart';
 import 'play_screen.dart';
 
 /// Copy and glyphs, verbatim from the design's detail top bar.
@@ -83,7 +84,7 @@ class _TopBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          _TopBarButton(
+          TopBarButton(
             glyph: _backGlyph,
             fontSize: AppFontSizes.glyph17,
             onTap: () => Navigator.of(context).maybePop(),
@@ -92,44 +93,11 @@ class _TopBar extends StatelessWidget {
           // The design draws this star with no handler and no filled state, so
           // it renders and does nothing. Inventing a favourite would mean
           // inventing its colour too.
-          const _TopBarButton(
+          const TopBarButton(
             glyph: _starGlyph,
             fontSize: AppFontSizes.glyph15,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TopBarButton extends StatelessWidget {
-  const _TopBarButton({required this.glyph, required this.fontSize, this.onTap});
-
-  final String glyph;
-  final double fontSize;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppBorderRadius.button,
-      child: Container(
-        width: AppSizes.topBarButton,
-        height: AppSizes.topBarButton,
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceRaised,
-          borderRadius: AppBorderRadius.button,
-        ),
-        child: Center(
-          child: Text(
-            glyph,
-            style: TextStyle(
-              fontSize: fontSize,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
       ),
     );
   }

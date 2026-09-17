@@ -156,6 +156,9 @@ abstract final class AppTextStyles {
   static TextStyle get overlayTitle =>
       _pixel(AppFontSizes.pixel13, AppColors.accentHighlight, height: AppLineHeights.overlay);
 
+  /// A D-pad arrow. The design leaves these on the body face, at glyph size.
+  static TextStyle get dpadGlyph => _body(AppFontSizes.glyph17, AppColors.textPrimary);
+
   /// Profile stat value.
   static TextStyle get statValueLarge => _pixel(AppFontSizes.pixel14, AppColors.accentPrimary);
 
@@ -191,9 +194,14 @@ abstract final class AppTextStyles {
   static TextStyle get body =>
       _body(AppFontSizes.body13, AppColors.textSecondary, height: AppLineHeights.relaxed);
 
-  /// Settings row label, trophy name.
+  /// Trophy name, and the profile's `Trophies earned` row.
   static TextStyle get bodyStrong =>
       _body(AppFontSizes.body135, AppColors.textPrimary, weight: AppFontWeights.semiBold);
+
+  /// Settings row label. The same size as [bodyStrong], but the design draws
+  /// this one at 500, not 600.
+  static TextStyle get settingsLabel =>
+      _body(AppFontSizes.body135, AppColors.textPrimary, weight: AppFontWeights.medium);
 
   /// Cabinet blurb on the detail screen.
   static TextStyle get blurb =>

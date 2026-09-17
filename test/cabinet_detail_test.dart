@@ -4,6 +4,7 @@ import 'package:cabinet88/models/leaderboard_entry.dart';
 import 'package:cabinet88/models/trophy.dart';
 import 'package:cabinet88/screens/cabinet_detail_screen.dart';
 import 'package:cabinet88/screens/play_screen.dart';
+import 'package:cabinet88/services/settings_service.dart';
 import 'package:cabinet88/services/trophy_service.dart';
 import 'package:cabinet88/theme/app_theme.dart';
 import 'package:cabinet88/widgets/detail_header_card.dart';
@@ -11,6 +12,7 @@ import 'package:cabinet88/widgets/layouts/tabbed_detail_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// A service with nothing unlocked, to prove the rows follow the service and
 /// not the catalog.
@@ -30,9 +32,16 @@ Future<void> _pumpDetail(
   Cabinet cabinet, {
   TrophyService service = const SeededTrophyService(),
 }) async {
+  SharedPreferences.setMockInitialValues(<String, Object>{});
+  final SettingsService settings = SettingsService();
+  await settings.load();
+
   await tester.pumpWidget(
-    Provider<TrophyService>.value(
-      value: service,
+    MultiProvider(
+      providers: [
+        Provider<TrophyService>.value(value: service),
+        ChangeNotifierProvider<SettingsService>.value(value: settings),
+      ],
       child: MaterialApp(
         theme: AppTheme.dark,
         home: CabinetDetailScreen(cabinet: cabinet),

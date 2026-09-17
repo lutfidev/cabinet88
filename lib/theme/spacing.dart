@@ -134,6 +134,14 @@ abstract final class AppInsets {
   static const EdgeInsets settingsRow = EdgeInsets.all(AppSpacing.s14);
   static const EdgeInsets note = EdgeInsets.all(AppSpacing.s15);
 
+  /// The play shell's body, under the HUD (`6px 16px 24px`).
+  static const EdgeInsets playBody = EdgeInsets.fromLTRB(
+    AppSpacing.s16,
+    AppSpacing.s6,
+    AppSpacing.s16,
+    AppSpacing.s24,
+  );
+
   /// The frame around the play field (`10px`).
   static const EdgeInsets playField = EdgeInsets.all(AppSpacing.s10);
 
