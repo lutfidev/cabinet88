@@ -27,14 +27,14 @@ class TopBarButton extends StatelessWidget {
       child: Container(
         width: AppSizes.topBarButton,
         height: AppSizes.topBarButton,
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceRaised,
+        decoration: BoxDecoration(
+          color: context.palette.surfaceRaised,
           borderRadius: AppBorderRadius.button,
         ),
         child: Center(
           child: Text(
             glyph,
-            style: TextStyle(fontSize: fontSize, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: fontSize, color: context.palette.textPrimary),
           ),
         ),
       ),

@@ -26,18 +26,18 @@ class _LeaderboardRow extends StatelessWidget {
   final LeaderboardEntry entry;
 
   /// Ranks one to three carry their own colour; the rest stay muted.
-  Color get _rankColor => entry.rank <= AppColors.rankColors.length
+  Color _rankColor(BuildContext context) => entry.rank <= AppColors.rankColors.length
       ? AppColors.rankColors[entry.rank - 1]
-      : AppColors.textFaint;
+      : context.palette.textFaint;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: entry.isYou ? AppColors.primaryTintRow : null,
-        border: const Border(
+        border: Border(
           bottom: BorderSide(
-            color: AppColors.borderDivider,
+            color: context.palette.borderDivider,
             width: AppBorderWidths.hairline,
           ),
         ),
@@ -50,20 +50,20 @@ class _LeaderboardRow extends StatelessWidget {
               width: AppSizes.leaderRankColumn,
               child: Text(
                 entry.rankLabel,
-                style: AppTextStyles.pixelLabel.copyWith(color: _rankColor),
+                style: context.text.pixelLabel.copyWith(color: _rankColor(context)),
               ),
             ),
             const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Text(
                 entry.handle,
-                style: AppTextStyles.leaderHandle,
+                style: context.text.leaderHandle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: AppSpacing.s12),
-            Text(entry.scoreLabel, style: AppTextStyles.leaderScore),
+            Text(entry.scoreLabel, style: context.text.leaderScore),
           ],
         ),
       ),

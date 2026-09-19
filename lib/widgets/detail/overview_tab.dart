@@ -27,7 +27,7 @@ class OverviewTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         // The design runs the blurb and the note together as one paragraph.
-        Text('${cabinet.blurb} ${cabinet.note}', style: AppTextStyles.blurb),
+        Text('${cabinet.blurb} ${cabinet.note}', style: context.text.blurb),
         const SizedBox(height: AppSpacing.s14),
         IntrinsicHeight(
           child: Row(
@@ -72,17 +72,17 @@ class _StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: AppInsets.statTile,
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceTile,
+      decoration: BoxDecoration(
+        color: context.palette.surfaceTile,
         borderRadius: AppBorderRadius.tile,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(value, style: AppTextStyles.statValue),
+          Text(value, style: context.text.statValue),
           const SizedBox(height: AppSpacing.s6),
-          Text(label, style: AppTextStyles.statLabel),
+          Text(label, style: context.text.statLabel),
         ],
       ),
     );

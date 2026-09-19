@@ -1,13 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The four switches on the settings screen, and where each one is stored.
+/// The switches on the settings screen, and where each one is stored.
 ///
-/// The defaults are the design's own (`set: {crt:true, haptics:true,
-/// sound:false, dpad:true}`), so a fresh install matches the prototype — and
-/// CRT scanlines start on, which hard rule 5 requires.
+/// Four of the five defaults are the design's own (`set: {crt:true,
+/// haptics:true, sound:false, dpad:true}`), so a fresh install matches the
+/// prototype — and CRT scanlines start on, which hard rule 5 requires.
+///
+/// [highContrast] is the fifth, and the design has no row for it: the
+/// accessibility pass is named in its next steps and never drawn. It sits
+/// second because it overrides the switch above it, and defaults off so a
+/// fresh install is still the design.
 enum AppSetting {
   crtScanlines('settings.crtScanlines', defaultValue: true),
+  highContrast('settings.highContrast', defaultValue: false),
   hapticFeedback('settings.hapticFeedback', defaultValue: true),
   cabinetAmbience('settings.cabinetAmbience', defaultValue: false),
   onScreenDpad('settings.onScreenDpad', defaultValue: true);
@@ -59,8 +65,13 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> toggle(AppSetting setting) => setValue(setting, !valueOf(setting));
 
-  /// Hard rule 5's switch: the CRT overlay follows this and nothing else.
+  /// Hard rule 5's switch. The overlay also yields to [highContrast],
+  /// which the design calls a scanline-free theme.
   bool get crtScanlines => valueOf(AppSetting.crtScanlines);
+
+  /// Brighter text, firmer edges, no scanlines. Derived from the design
+  /// rather than drawn by it — see [AppPalette].
+  bool get highContrast => valueOf(AppSetting.highContrast);
 
   /// Whether the play shell draws its on-screen D-pad. Off means swipe only.
   bool get onScreenDpad => valueOf(AppSetting.onScreenDpad);

@@ -44,14 +44,14 @@ class _TrophyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color ring =
-        unlocked ? AppColors.accentHighlight : AppColors.textLocked;
+        unlocked ? AppColors.accentHighlight : context.palette.textLocked;
 
     return Opacity(
       opacity: unlocked ? 1 : AppOpacities.lockedDetail,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.s12),
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceTile,
+        decoration: BoxDecoration(
+          color: context.palette.surfaceTile,
           borderRadius: AppBorderRadius.tile,
         ),
         child: Row(
@@ -63,9 +63,9 @@ class _TrophyRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text(trophy.name, style: AppTextStyles.bodyStrong),
+                  Text(trophy.name, style: context.text.bodyStrong),
                   const SizedBox(height: AppSpacing.s2),
-                  Text(trophy.description, style: AppTextStyles.captionMeta),
+                  Text(trophy.description, style: context.text.captionMeta),
                 ],
               ),
             ),
@@ -95,7 +95,7 @@ class _GlyphRing extends StatelessWidget {
       child: Center(
         child: Text(
           glyph,
-          style: AppTextStyles.trophyGlyph.copyWith(color: ring),
+          style: context.text.trophyGlyph.copyWith(color: ring),
         ),
       ),
     );

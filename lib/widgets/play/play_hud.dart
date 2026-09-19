@@ -74,9 +74,9 @@ class _Readout extends StatelessWidget {
       crossAxisAlignment: alignment,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(label, style: AppTextStyles.pixelLabel),
+        Text(label, style: context.text.pixelLabel),
         const SizedBox(height: AppSpacing.s7),
-        Text(value, style: AppTextStyles.hudValue.copyWith(color: color)),
+        Text(value, style: context.text.hudValue.copyWith(color: color)),
       ],
     );
   }

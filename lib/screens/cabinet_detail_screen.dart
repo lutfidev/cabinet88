@@ -112,7 +112,7 @@ class _TopBar extends StatelessWidget {
             fontSize: AppFontSizes.glyph17,
             onTap: () => Navigator.of(context).maybePop(),
           ),
-          Text(_eyebrow, style: AppTextStyles.topBarEyebrow),
+          Text(_eyebrow, style: context.text.topBarEyebrow),
           // The design draws this star with no handler and no filled state, so
           // it renders and does nothing. Inventing a favourite would mean
           // inventing its colour too.

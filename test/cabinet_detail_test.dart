@@ -186,7 +186,7 @@ void main() {
     expect(_glyphColor(tester, '1'), AppColors.accentHighlight);
 
     expect(_rowOpacity(tester, 'No Guessing'), AppOpacities.lockedDetail);
-    expect(_glyphColor(tester, 'X'), AppColors.textLocked);
+    expect(_glyphColor(tester, 'X'), AppPalette.standard.textLocked);
   });
 
   testWidgets('unlock state follows the service, not the catalog',

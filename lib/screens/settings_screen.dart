@@ -11,9 +11,14 @@ import '../widgets/top_bar_button.dart';
 const String _header = 'CABINET SETTINGS';
 const String _backGlyph = '‹';
 
-/// The label and hint the design gives each switch, in its order.
+/// The label and hint each switch carries, in the order they are drawn.
+///
+/// Four are the design's own copy, verbatim. `High contrast` is not — the
+/// design names the accessibility pass without drawing a row for it, so
+/// this line is written to the voice of the other four.
 const Map<AppSetting, (String, String)> _copy = <AppSetting, (String, String)>{
   AppSetting.crtScanlines: ('CRT scanlines', 'Softer glow, authentic curve'),
+  AppSetting.highContrast: ('High contrast', 'Brighter text, no scanlines'),
   AppSetting.hapticFeedback: ('Haptic feedback', 'A small thud on every hit'),
   AppSetting.cabinetAmbience: (
     'Cabinet ambience',
@@ -24,9 +29,9 @@ const Map<AppSetting, (String, String)> _copy = <AppSetting, (String, String)>{
 
 /// The settings screen.
 ///
-/// The design keeps these four switches inside its profile screen, which the
-/// architecture does not have; the block moves here whole, in its own order,
-/// with nothing added to it.
+/// The design keeps its four switches inside its profile screen, which the
+/// architecture does not have; the block moved here whole, in its own order.
+/// High contrast is the one addition, and it keeps those four in sequence.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -64,7 +69,7 @@ class SettingsScreen extends StatelessWidget {
                   child: ListView(
                     padding: AppInsets.screenBelowBar,
                     children: <Widget>[
-                      Text(_header, style: AppTextStyles.sectionHeader),
+                      Text(_header, style: context.text.sectionHeader),
                       const SizedBox(height: AppSpacing.s10),
                       for (final AppSetting setting in AppSetting.values) ...<Widget>[
                         SettingsRow(

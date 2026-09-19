@@ -37,7 +37,7 @@ class PlaylistLayout extends StatelessWidget {
       children: <Widget>[
         _TonightsPick(cabinet: featured, onTap: () => onOpen(featured)),
         const SizedBox(height: AppSpacing.s16),
-        Text(_sectionLabel, style: AppTextStyles.sectionHeader),
+        Text(_sectionLabel, style: context.text.sectionHeader),
         const SizedBox(height: AppSpacing.s10),
         for (final Cabinet cabinet in cabinets)
           CabinetTile(cabinet: cabinet, onTap: () => onOpen(cabinet)),
@@ -70,19 +70,19 @@ class _TonightsPick extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: AppBorderRadius.card,
-          highlightColor: AppColors.surfacePressed,
-          splashColor: AppColors.surfacePressed,
+          highlightColor: context.palette.surfacePressed,
+          splashColor: context.palette.surfacePressed,
           child: Padding(
             padding: AppInsets.cardRoomy,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(_pickEyebrow, style: AppTextStyles.eyebrow),
+                Text(_pickEyebrow, style: context.text.eyebrow),
                 const SizedBox(height: AppSpacing.s8),
-                Text(cabinet.title, style: AppTextStyles.cardTitle),
+                Text(cabinet.title, style: context.text.cardTitle),
                 const SizedBox(height: AppSpacing.s4),
-                Text(_pickSubtitle, style: AppTextStyles.cardSubtitle),
+                Text(_pickSubtitle, style: context.text.cardSubtitle),
               ],
             ),
           ),

@@ -57,15 +57,28 @@ class Cabinet88App extends StatelessWidget {
               ProgressTrophyService(stored),
         ),
       ],
-      child: MaterialApp(
-        title: 'Cabinet88',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        // The CRT overlay is applied once, over every route (hard rule 5). No
-        // screen builds one of its own.
-        builder: (BuildContext context, Widget? child) =>
-            CrtOverlay(child: child ?? const SizedBox.shrink()),
-        home: const HomeScreen(),
+      // The palette is chosen here and nowhere else. A toggle notifies, the
+      // app rebuilds on the other theme, and every widget reading
+      // `context.palette` comes with it — no restart, and no screen deciding
+      // for itself what high contrast means.
+      child: Consumer<SettingsService>(
+        builder: (BuildContext context, SettingsService live, Widget? _) {
+          final AppPalette palette =
+              live.highContrast ? AppPalette.highContrast : AppPalette.standard;
+
+          return MaterialApp(
+            title: 'Cabinet88',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.themeFor(palette),
+            // The palette scope and the CRT overlay are both applied once,
+            // over every route (hard rule 5). No screen builds its own.
+            builder: (BuildContext context, Widget? child) => PaletteScope(
+              palette: palette,
+              child: CrtOverlay(child: child ?? const SizedBox.shrink()),
+            ),
+            home: const HomeScreen(),
+          );
+        },
       ),
     );
   }

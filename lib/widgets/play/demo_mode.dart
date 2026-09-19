@@ -48,8 +48,8 @@ class DemoMode extends StatelessWidget {
             child: Text(
               _caption(playable.title),
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textCaption,
+              style: context.text.bodySmall.copyWith(
+                color: context.palette.textCaption,
                 height: AppLineHeights.loose,
               ),
             ),
@@ -76,10 +76,10 @@ class _DemoScreen extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: AppBorderRadius.card,
           border: Border.all(
-            color: AppColors.borderDemo,
+            color: context.palette.borderDemo,
             width: AppBorderWidths.hairline,
           ),
-          gradient: AppGradients.demoScreen,
+          gradient: context.palette.demoScreenGradient,
         ),
         child: ClipRRect(
           borderRadius: AppBorderRadius.card,
@@ -148,7 +148,7 @@ class _BlinkState extends State<_Blink> with SingleTickerProviderStateMixin {
       child: Text(
         _pressStart,
         textAlign: TextAlign.center,
-        style: AppTextStyles.pixelLabel
+        style: context.text.pixelLabel
             .copyWith(color: AppColors.accentHighlight),
       ),
     );
@@ -179,7 +179,7 @@ class _TryCta extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: AppTextStyles.pixelLabel
+            style: context.text.pixelLabel
                 .copyWith(color: AppColors.accentPositive),
           ),
         ),

@@ -27,10 +27,10 @@ class DetailHeaderCard extends StatelessWidget {
     return Container(
       padding: AppInsets.card,
       decoration: BoxDecoration(
-        gradient: AppGradients.detailHeader,
+        gradient: context.palette.detailHeaderGradient,
         borderRadius: AppBorderRadius.cardLarge,
         border: Border.all(
-          color: AppColors.border,
+          color: context.palette.border,
           width: AppBorderWidths.hairline,
         ),
       ),
@@ -45,14 +45,14 @@ class DetailHeaderCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   cabinet.title,
-                  style: AppTextStyles.detailTitle,
+                  style: context.text.detailTitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AppSpacing.s7),
                 Text(
                   '${cabinet.genre.label} · ${cabinet.year}',
-                  style: AppTextStyles.detailMeta,
+                  style: context.text.detailMeta,
                 ),
                 const SizedBox(height: AppSpacing.s11),
                 _PlayPill(
@@ -112,7 +112,7 @@ class _PlayPill extends StatelessWidget {
           color: AppColors.accentPositive,
           borderRadius: AppBorderRadius.tab,
         ),
-        child: Text(label, style: AppTextStyles.playButton),
+        child: Text(label, style: context.text.playButton),
       ),
     );
   }

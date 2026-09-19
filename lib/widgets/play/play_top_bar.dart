@@ -5,7 +5,7 @@ import '../../theme/app_theme.dart';
 /// The play shell's top bar: leave, which cabinet this is, and pause.
 ///
 /// The design draws the divider under it at white `.07`, the same value
-/// [AppColors.surfaceRaised] carries.
+/// [context.palette.surfaceRaised] carries.
 class PlayTopBar extends StatelessWidget {
   const PlayTopBar({
     super.key,
@@ -25,10 +25,10 @@ class PlayTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppColors.surfaceRaised,
+            color: context.palette.surfaceRaised,
             width: AppBorderWidths.hairline,
           ),
         ),
@@ -40,18 +40,18 @@ class PlayTopBar extends StatelessWidget {
           children: <Widget>[
             _BarAction(
               label: exitLabel,
-              style: AppTextStyles.pixelLabel
-                  .copyWith(color: AppColors.textPixelMuted),
+              style: context.text.pixelLabel
+                  .copyWith(color: context.palette.textPixelMuted),
               onTap: onExit,
             ),
             Text(
               title,
-              style: AppTextStyles.pixelLabel
+              style: context.text.pixelLabel
                   .copyWith(color: AppColors.accentHighlight),
             ),
             _BarAction(
               label: pauseLabel,
-              style: AppTextStyles.pixelLabel
+              style: context.text.pixelLabel
                   .copyWith(color: AppColors.accentSecondary),
               onTap: onTogglePause,
             ),

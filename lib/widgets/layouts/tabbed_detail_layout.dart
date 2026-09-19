@@ -126,8 +126,8 @@ class _TabStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: AppInsets.tabTrack,
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceTrack,
+      decoration: BoxDecoration(
+        color: context.palette.surfaceTrack,
         borderRadius: AppBorderRadius.tile,
       ),
       child: Row(
@@ -171,8 +171,8 @@ class _Tab extends StatelessWidget {
             tab.label,
             textAlign: TextAlign.center,
             style: active
-                ? AppTextStyles.tabLabel.copyWith(color: AppColors.onAccent)
-                : AppTextStyles.tabLabel,
+                ? context.text.tabLabel.copyWith(color: AppColors.onAccent)
+                : context.text.tabLabel,
           ),
         ),
       ),

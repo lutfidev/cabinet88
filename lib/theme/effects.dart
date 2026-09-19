@@ -4,6 +4,10 @@ import 'colors.dart';
 
 /// Gradients, shadows and motion timings from the design.
 ///
+/// The two gradients that spend a palette colour — the detail header card
+/// and the demo-mode screen — are not here. They vary with the
+/// high-contrast theme, so they live on `AppPalette` instead.
+///
 /// These live here for the same reason colours do: hard rule 4 means no widget
 /// may carry a raw value, and a gradient stop is as much a design value as a
 /// hex is.
@@ -36,16 +40,6 @@ abstract final class AppGradients {
     ],
   );
 
-  /// Detail header card, `linear-gradient(120deg,...)`.
-  static const LinearGradient detailHeader = LinearGradient(
-    begin: Alignment(-0.87, -0.5),
-    end: Alignment(0.87, 0.5),
-    colors: <Color>[
-      AppColors.surfaceRaised,
-      AppColors.surfaceFade,
-    ],
-  );
-
   /// Cabinet tile, `linear-gradient(180deg,#171029,#0b0714)`.
   static const LinearGradient tile = LinearGradient(
     begin: Alignment.topCenter,
@@ -70,13 +64,6 @@ abstract final class AppGradients {
       AppColors.positiveTintCore,
       AppColors.playBackground,
     ],
-  );
-
-  /// Demo-mode cabinet screen, `radial-gradient(70% 80% at 50% 45%,...)`.
-  static const RadialGradient demoScreen = RadialGradient(
-    center: Alignment(0, -0.1),
-    radius: 0.8,
-    colors: <Color>[AppColors.borderDemo, AppColors.playBackground],
   );
 
   /// CRT vignette, `radial-gradient(120% 80% at 50% 40%,...)`.

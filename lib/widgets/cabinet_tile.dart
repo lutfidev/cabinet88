@@ -18,13 +18,13 @@ class CabinetTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      highlightColor: AppColors.surfacePressed,
-      splashColor: AppColors.surfacePressed,
+      highlightColor: context.palette.surfacePressed,
+      splashColor: context.palette.surfacePressed,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: AppColors.borderDivider,
+              color: context.palette.borderDivider,
               width: AppBorderWidths.hairline,
             ),
           ),
@@ -50,14 +50,14 @@ class CabinetTile extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       cabinet.title,
-                      style: AppTextStyles.rowTitle,
+                      style: context.text.rowTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppSpacing.s2),
                     Text(
                       '${cabinet.genre.label} · ${cabinet.plays} plays',
-                      style: AppTextStyles.caption,
+                      style: context.text.caption,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -65,7 +65,7 @@ class CabinetTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.s13),
-              Text(cabinet.highScoreLabel, style: AppTextStyles.rowScore),
+              Text(cabinet.highScoreLabel, style: context.text.rowScore),
             ],
           ),
         ),

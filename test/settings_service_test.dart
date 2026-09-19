@@ -14,6 +14,9 @@ void main() {
     expect(settings.hapticFeedback, isTrue);
     expect(settings.cabinetAmbience, isFalse);
     expect(settings.onScreenDpad, isTrue);
+    // The fifth switch is not the design's. A fresh install is still the
+    // design, so it starts off.
+    expect(settings.highContrast, isFalse);
   });
 
   test('stored values win over the defaults', () async {
@@ -38,6 +41,9 @@ void main() {
     await settings.toggle(AppSetting.crtScanlines);
     expect(settings.crtScanlines, isFalse);
 
+    await settings.toggle(AppSetting.highContrast);
+    expect(settings.highContrast, isTrue);
+
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     expect(preferences.getBool(AppSetting.crtScanlines.storageKey), isFalse);
 
@@ -45,6 +51,7 @@ void main() {
     final SettingsService reloaded = SettingsService();
     await reloaded.load();
     expect(reloaded.crtScanlines, isFalse);
+    expect(reloaded.highContrast, isTrue);
   });
 
   test('listeners hear a change once, and not when nothing changed', () async {

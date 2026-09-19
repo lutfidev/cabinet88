@@ -117,11 +117,11 @@ class _DpadCentre extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.square(
+    return SizedBox.square(
       dimension: AppSizes.dpadKey,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.surfacePressed,
+          color: context.palette.surfacePressed,
           borderRadius: AppBorderRadius.control,
         ),
       ),
@@ -166,15 +166,15 @@ class _DpadKeyState extends State<_DpadKey> {
             decoration: BoxDecoration(
               color: _pressed
                   ? AppColors.positiveTintPressed
-                  : AppColors.surfaceRaised,
+                  : context.palette.surfaceRaised,
               borderRadius: AppBorderRadius.control,
               border: Border.all(
-                color: AppColors.borderStrong,
+                color: context.palette.borderStrong,
                 width: AppBorderWidths.hairline,
               ),
             ),
             child: Center(
-              child: Text(_arrows[widget.input]!, style: AppTextStyles.dpadGlyph),
+              child: Text(_arrows[widget.input]!, style: context.text.dpadGlyph),
             ),
           ),
         ),
@@ -204,7 +204,7 @@ class _ActionButton extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           label,
-          style: AppTextStyles.pixelLabel.copyWith(color: AppColors.onAccent),
+          style: context.text.pixelLabel.copyWith(color: AppColors.onAccent),
         ),
       ),
     );

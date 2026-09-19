@@ -49,7 +49,7 @@ Color _trackColour(WidgetTester tester, int index) {
 }
 
 void main() {
-  testWidgets('the screen shows the design\'s four switches, in its order',
+  testWidgets('the screen shows five switches: the design\'s four, plus high contrast',
       (WidgetTester tester) async {
     await _pumpSettings(tester);
 
@@ -57,6 +57,8 @@ void main() {
     expect(find.byType(SettingsRow), findsNWidgets(AppSetting.values.length));
     expect(find.text('CRT scanlines'), findsOneWidget);
     expect(find.text('Softer glow, authentic curve'), findsOneWidget);
+    expect(find.text('High contrast'), findsOneWidget);
+    expect(find.text('Brighter text, no scanlines'), findsOneWidget);
     expect(find.text('Haptic feedback'), findsOneWidget);
     expect(find.text('Cabinet ambience'), findsOneWidget);
     expect(find.text('On-screen D-pad'), findsOneWidget);
@@ -67,15 +69,15 @@ void main() {
       (WidgetTester tester) async {
     final SettingsService settings = await _pumpSettings(tester);
 
-    // CRT is on by default, ambience is off.
+    // CRT is on by default; ambience, the fourth row, is off.
     expect(_trackColour(tester, 0), AppColors.accentPrimary);
-    expect(_trackColour(tester, 2), AppColors.surfaceToggleOff);
+    expect(_trackColour(tester, 3), AppPalette.standard.surfaceToggleOff);
 
     await tester.tap(find.text('CRT scanlines'));
     await tester.pumpAndSettle();
 
     expect(settings.crtScanlines, isFalse);
-    expect(_trackColour(tester, 0), AppColors.surfaceToggleOff);
+    expect(_trackColour(tester, 0), AppPalette.standard.surfaceToggleOff);
 
     final SharedPreferences preferences = await SharedPreferences.getInstance();
     expect(preferences.getBool(AppSetting.crtScanlines.storageKey), isFalse);
@@ -129,5 +131,73 @@ void main() {
 
     expect(find.byType(SettingsScreen), findsOneWidget);
     expect(find.text('CABINET SETTINGS'), findsOneWidget);
+  });
+
+  testWidgets('high contrast repaints the app on the other palette, with no restart',
+      (WidgetTester tester) async {
+    final SettingsService settings = await _loaded();
+    await tester.pumpWidget(
+      Cabinet88App(settings: settings, progress: await _progress()),
+    );
+    await tester.pumpAndSettle();
+
+    // A playlist row's meta line, which spends `textFaint`.
+    Color metaColour() => tester
+        .widget<Text>(find.textContaining('plays').first)
+        .style!
+        .color!;
+
+    expect(metaColour(), AppPalette.standard.textFaint);
+
+    await settings.setValue(AppSetting.highContrast, true);
+    await tester.pumpAndSettle();
+
+    expect(metaColour(), AppPalette.highContrast.textFaint);
+
+    await settings.setValue(AppSetting.highContrast, false);
+    await tester.pumpAndSettle();
+    expect(metaColour(), AppPalette.standard.textFaint);
+  });
+
+  testWidgets('high contrast is scanline-free, whatever the CRT switch says',
+      (WidgetTester tester) async {
+    final SettingsService settings = await _loaded();
+    await tester.pumpWidget(
+      Cabinet88App(settings: settings, progress: await _progress()),
+    );
+    await tester.pumpAndSettle();
+
+    // CRT starts on, per hard rule 5.
+    expect(settings.crtScanlines, isTrue);
+    expect(find.byKey(CrtOverlay.scanlineKey), findsOneWidget);
+
+    await settings.setValue(AppSetting.highContrast, true);
+    await tester.pump();
+    expect(find.byKey(CrtOverlay.scanlineKey), findsNothing);
+
+    // The CRT switch is untouched underneath, and comes back when the
+    // accessibility theme goes away.
+    expect(settings.crtScanlines, isTrue);
+    await settings.setValue(AppSetting.highContrast, false);
+    await tester.pump();
+    expect(find.byKey(CrtOverlay.scanlineKey), findsOneWidget);
+  });
+
+  testWidgets('a stored high-contrast theme is honoured on the first frame',
+      (WidgetTester tester) async {
+    final SettingsService settings = await _loaded(<String, Object>{
+      AppSetting.highContrast.storageKey: true,
+    });
+    await tester.pumpWidget(
+      Cabinet88App(settings: settings, progress: await _progress()),
+    );
+
+    // Nothing renders on the design's palette first, not even for one frame.
+    expect(find.byKey(CrtOverlay.scanlineKey), findsNothing);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.textContaining('plays').first).style!.color,
+      AppPalette.highContrast.textFaint,
+    );
   });
 }

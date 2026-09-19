@@ -67,9 +67,9 @@ class _GreetingHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(_greeting, style: AppTextStyles.greetingEyebrow),
+              Text(_greeting, style: context.text.greetingEyebrow),
               const SizedBox(height: AppSpacing.s6),
-              Text(_heading, style: AppTextStyles.screenTitle),
+              Text(_heading, style: context.text.screenTitle),
             ],
           ),
         ),

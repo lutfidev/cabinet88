@@ -408,7 +408,7 @@ class _PlayBody extends StatelessWidget {
           Text(
             _footer,
             textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(color: AppColors.textDisabled),
+            style: context.text.caption.copyWith(color: context.palette.textDisabled),
           ),
         ],
       ),

@@ -37,7 +37,7 @@ class PlayOverlay extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: AppTextStyles.overlayTitle.copyWith(color: titleColor),
+              style: context.text.overlayTitle.copyWith(color: titleColor),
             ),
             const SizedBox(height: AppSpacing.s14),
             // The note is the one part that can outgrow a short field — a
@@ -52,7 +52,7 @@ class PlayOverlay extends StatelessWidget {
                   child: Text(
                     note,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall
+                    style: context.text.bodySmall
                         .copyWith(height: AppLineHeights.normal),
                   ),
                 ),
@@ -83,7 +83,7 @@ class _Cta extends StatelessWidget {
         borderRadius: AppBorderRadius.button,
         child: Padding(
           padding: AppInsets.overlayCta,
-          child: Text(label, style: AppTextStyles.overlayCta),
+          child: Text(label, style: context.text.overlayCta),
         ),
       ),
     );

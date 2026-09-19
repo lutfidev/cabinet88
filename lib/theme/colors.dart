@@ -1,6 +1,10 @@
 import 'package:flutter/painting.dart';
 
-/// Every colour in Cabinet88, named by the role it plays.
+/// Every colour in Cabinet88 that does not vary by theme.
+///
+/// The text ladder, the neutral surface fills and the borders all change
+/// when high contrast is on, so they are not here — they live in
+/// `palette.dart` and are reached through `context.palette`.
 ///
 /// Values are lifted verbatim from `design/Arcade Vault.dc.html`; the source CSS
 /// is noted against each one. Alpha is baked into the hex so nothing has to
@@ -33,23 +37,12 @@ abstract final class AppColors {
   static const Color playOverlayScrim = Color(0xDB05040A); // rgba(5,4,10,.86)
 
   // ---------------------------------------------------------------------------
-  // Text — a ladder of alphas over #f4eeff
+  // Text on an accent fill
   // ---------------------------------------------------------------------------
 
-  /// Body and heading text.
-  static const Color textPrimary = Color(0xFFF4EEFF); // #f4eeff
-
-  static const Color textBody = Color(0xB8F4EEFF); // .72 — cabinet blurb
-  static const Color textSecondary = Color(0xB3F4EEFF); // .70 — note copy
-  static const Color textScore = Color(0xA6F4EEFF); // .65 — leaderboard scores
-  static const Color textSubtle = Color(0x99F4EEFF); // .60 — subtitles
-  static const Color textPixelMuted = Color(0x8CF4EEFF); // .55 — `EXIT`
-  static const Color textCaption = Color(0x80F4EEFF); // .50 — play captions
-  static const Color textMeta = Color(0x73F4EEFF); // .45 — row meta, stat labels
-  static const Color textHint = Color(0x6BF4EEFF); // .42 — settings hints
-  static const Color textFaint = Color(0x66F4EEFF); // .40 — HUD labels
-  static const Color textDisabled = Color(0x59F4EEFF); // .35 — inactive tabs
-  static const Color textLocked = Color(0x40F4EEFF); // .25 — locked trophy ring
+  // The text ladder itself varies with the high-contrast theme, so it lives
+  // in `palette.dart`. These two do not: they are read against a filled
+  // accent, never against the app background.
 
   /// Text on a filled accent button.
   static const Color onAccent = Color(0xFFFFFFFF); // #fff
@@ -81,27 +74,6 @@ abstract final class AppColors {
 
   /// Label of an active filter chip.
   static const Color accentPrimarySoft = Color(0xFFFFB3D1); // #ffb3d1
-
-  // ---------------------------------------------------------------------------
-  // Surfaces — neutral fills over the background
-  // ---------------------------------------------------------------------------
-
-  static const Color surfaceRaised = Color(0x12FFFFFF); // .070 — detail header
-  static const Color surfaceTrack = Color(0x0DFFFFFF); // .050 — tab strip track
-  static const Color surfaceTile = Color(0x0AFFFFFF); // .040 — stat, trophy
-  static const Color surfaceRow = Color(0x09FFFFFF); // .035 — settings rows
-  static const Color surfacePressed = Color(0x08FFFFFF); // .030 — row pressed
-  static const Color surfaceFade = Color(0x05FFFFFF); // .020 — gradient tail
-  static const Color surfaceToggleOff = Color(0x26FFFFFF); // .150 — toggle off
-
-  // ---------------------------------------------------------------------------
-  // Borders
-  // ---------------------------------------------------------------------------
-
-  static const Color borderStrong = Color(0x17FFFFFF); // .09 — D-pad key
-  static const Color border = Color(0x14FFFFFF); // .08 — card outline
-  static const Color borderDivider = Color(0x0FFFFFFF); // .06 — list divider
-  static const Color borderDemo = Color(0x24FFFFFF); // .14 — demo frame
 
   // ---------------------------------------------------------------------------
   // Accent tints
@@ -153,7 +125,8 @@ abstract final class AppColors {
   // Leaderboard ranks
   // ---------------------------------------------------------------------------
 
-  /// Ranks 01, 02 and 03. Every rank below falls back to [textFaint].
+  /// Ranks 01, 02 and 03. Every rank below falls back to the palette
+  /// `textFaint`, which the leaderboard row supplies.
   static const List<Color> rankColors = <Color>[
     accentHighlight,
     accentSecondary,

@@ -21,6 +21,10 @@ enum CrtTone {
 /// [SettingsService.crtScanlines]: off, and the overlay is not in the tree at
 /// all.
 ///
+/// High contrast overrides it. The design asks for a *scanline-free*
+/// high-contrast theme, so that switch wins over this one and the pattern
+/// does not paint, whatever the CRT switch says.
+///
 /// Cost: the painter is behind a [RepaintBoundary] and its `shouldRepaint` is
 /// constant, so it paints once per size change and never once per frame. That
 /// is the phase guardrail — a game running underneath pays nothing for it.
@@ -45,8 +49,9 @@ class CrtOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool scanlines =
-        context.select<SettingsService, bool>((SettingsService s) => s.crtScanlines);
+    final bool scanlines = context.select<SettingsService, bool>(
+      (SettingsService s) => s.crtScanlines && !s.highContrast,
+    );
     if (!scanlines) {
       return child;
     }

@@ -18,7 +18,7 @@ class PixelToggle extends StatelessWidget {
       height: AppSizes.toggleTrack.height,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: value ? AppColors.accentPrimary : AppColors.surfaceToggleOff,
+          color: value ? AppColors.accentPrimary : context.palette.surfaceToggleOff,
           borderRadius: AppBorderRadius.row,
         ),
         child: Padding(

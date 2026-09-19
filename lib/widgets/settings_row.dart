@@ -22,7 +22,7 @@ class SettingsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surfaceRow,
+      color: context.palette.surfaceRow,
       borderRadius: AppBorderRadius.tile,
       child: InkWell(
         onTap: onTap,
@@ -37,12 +37,12 @@ class SettingsRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(label, style: AppTextStyles.settingsLabel),
+                      Text(label, style: context.text.settingsLabel),
                       const SizedBox(height: AppSpacing.s3),
                       Text(
                         hint,
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textHint),
+                        style: context.text.caption
+                            .copyWith(color: context.palette.textHint),
                       ),
                     ],
                   ),
