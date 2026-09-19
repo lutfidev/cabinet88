@@ -41,11 +41,20 @@ class PlayField extends StatelessWidget {
               // caching — `willChange` keeps the raster cache out of the way.
               // Nothing in the board is announced: the HUD above it carries
               // the score, and the overlay carries the state of the run.
+              // `SizedBox.expand`, and not a bare `CustomPaint`, because the
+              // overlay composites through a `Stack` whose child is laid out
+              // loose. A painter with no child has no preferred size of its
+              // own, so under loose constraints it takes the smallest one it
+              // is offered — zero — and the board is never drawn. The frame,
+              // the glow and the scanlines all sized correctly around it,
+              // which is why nothing looked broken.
               child: ExcludeSemantics(
-                child: CustomPaint(
-                  painter: painter,
-                  isComplex: true,
-                  willChange: true,
+                child: SizedBox.expand(
+                  child: CustomPaint(
+                    painter: painter,
+                    isComplex: true,
+                    willChange: true,
+                  ),
                 ),
               ),
             ),

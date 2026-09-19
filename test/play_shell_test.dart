@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cabinet88/games/serpent88/serpent88_game.dart';
 import 'package:cabinet88/games/serpent88/serpent_engine.dart';
+import 'package:cabinet88/games/serpent88/serpent_painter.dart';
 import 'package:cabinet88/models/cabinet.dart';
 import 'package:cabinet88/models/cabinet_catalog.dart';
 import 'package:cabinet88/screens/play_screen.dart';
@@ -469,6 +470,29 @@ void main() {
       tester.widget<PlayScreen>(find.byType(PlayScreen)).cabinet.id,
       CabinetCatalog.serpentId,
     );
+
+    await _close(tester);
+  });
+
+  testWidgets('the board is given a square to draw on, not a zero one',
+      (WidgetTester tester) async {
+    await _pumpPlay(tester);
+
+    // The game's painter sits inside the CRT overlay, which composites through
+    // a Stack and lays its child out loose. A `CustomPaint` with no child has
+    // no preferred size, so under loose constraints it takes zero and paints
+    // nothing — and nothing else on the screen looks wrong when it does. The
+    // frame, the glow and the scanlines are all sized by other widgets.
+    final RenderBox board = tester.renderObject<RenderBox>(
+      find.descendant(
+        of: find.byType(PlayField),
+        matching: find.byWidgetPredicate(
+          (Widget w) => w is CustomPaint && w.painter is SerpentPainter,
+        ),
+      ),
+    );
+    expect(board.size.width, greaterThan(0));
+    expect(board.size.height, closeTo(board.size.width, 0.5));
 
     await _close(tester);
   });
