@@ -9,6 +9,9 @@ const String _pickEyebrow = "TONIGHT'S PICK";
 const String _pickSubtitle = 'Five minutes is never five minutes.';
 const String _sectionLabel = 'ALL CABINETS';
 
+/// The eyebrow again, in the case a screen reader should say it in.
+const String _pickSpoken = "Tonight's pick";
+
 /// The Playlist home body: tonight's pick, then every cabinet as a row.
 ///
 /// Kept apart from `HomeScreen` so a future Marquee or Row direction can take
@@ -37,7 +40,10 @@ class PlaylistLayout extends StatelessWidget {
       children: <Widget>[
         _TonightsPick(cabinet: featured, onTap: () => onOpen(featured)),
         const SizedBox(height: AppSpacing.s16),
-        Text(_sectionLabel, style: context.text.sectionHeader),
+        Semantics(
+          header: true,
+          child: Text(_sectionLabel, style: context.text.sectionHeader),
+        ),
         const SizedBox(height: AppSpacing.s10),
         for (final Cabinet cabinet in cabinets)
           CabinetTile(cabinet: cabinet, onTap: () => onOpen(cabinet)),
@@ -54,6 +60,17 @@ class _TonightsPick extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      button: true,
+      label: '$_pickSpoken: ${cabinet.title}. $_pickSubtitle',
+      onTap: onTap,
+      excludeSemantics: true,
+      child: _card(context),
+    );
+  }
+
+  Widget _card(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: AppGradients.tonightPick,

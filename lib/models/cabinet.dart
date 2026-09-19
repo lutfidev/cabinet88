@@ -83,6 +83,12 @@ class Cabinet {
   /// there is nothing to show.
   static String scoreLabel(int score) => score == 0 ? '—' : formatScore(score);
 
+  /// A score as a screen reader should hear it.
+  ///
+  /// The drawn em dash means "never scored", which does not survive being
+  /// read out loud.
+  static String spokenScore(int score) => score == 0 ? 'none yet' : formatScore(score);
+
   /// `24680` becomes `24,680`, matching `toLocaleString('en-US')`.
   static String formatScore(int value) {
     final String digits = value.toString();

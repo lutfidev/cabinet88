@@ -11,6 +11,15 @@ const Map<GameInput, String> _arrows = <GameInput, String>{
   GameInput.right: '▶',
 };
 
+/// The same four keys, as a screen reader should name them. A triangle is not
+/// a direction, and `GameInput.up.name` is not a word.
+const Map<GameInput, String> _spokenArrows = <GameInput, String>{
+  GameInput.up: 'Up',
+  GameInput.down: 'Down',
+  GameInput.left: 'Left',
+  GameInput.right: 'Right',
+};
+
 /// The controls under the field: a 3x3 D-pad and the round action button.
 ///
 /// The D-pad disappears when the player turns it off in settings; the action
@@ -20,12 +29,17 @@ class PlayControls extends StatelessWidget {
     super.key,
     required this.showDpad,
     required this.actionLabel,
+    required this.actionSpoken,
     required this.onDirection,
     required this.onAction,
   });
 
   final bool showDpad;
   final String actionLabel;
+
+  /// The action button's label in the case a screen reader should say it.
+  final String actionSpoken;
+
   final ValueChanged<GameInput> onDirection;
   final VoidCallback onAction;
 
@@ -38,7 +52,11 @@ class PlayControls extends StatelessWidget {
           _Dpad(onDirection: onDirection),
           const SizedBox(width: AppSpacing.s26),
         ],
-        _ActionButton(label: actionLabel, onTap: onAction),
+        _ActionButton(
+          label: actionLabel,
+          spoken: actionSpoken,
+          onTap: onAction,
+        ),
       ],
     );
   }
@@ -151,15 +169,21 @@ class _DpadKeyState extends State<_DpadKey> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (TapDownDetails _) => _setPressed(true),
-      onTapUp: (TapUpDetails _) => _setPressed(false),
-      onTapCancel: () => _setPressed(false),
+    // The annotation wraps the detector rather than sitting inside it, so the
+    // key is one node to a screen reader and not a labelled button inside an
+    // anonymous tappable box.
+    return Semantics(
+      container: true,
+      button: true,
+      label: _spokenArrows[widget.input]!,
       onTap: () => widget.onDirection(widget.input),
-      child: Semantics(
-        button: true,
-        label: widget.input.name,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (TapDownDetails _) => _setPressed(true),
+        onTapUp: (TapUpDetails _) => _setPressed(false),
+        onTapCancel: () => _setPressed(false),
+        onTap: () => widget.onDirection(widget.input),
         child: SizedBox.square(
           dimension: AppSizes.dpadKey,
           child: DecoratedBox(
@@ -184,13 +208,29 @@ class _DpadKeyState extends State<_DpadKey> {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.label, required this.onTap});
+  const _ActionButton({
+    required this.label,
+    required this.spoken,
+    required this.onTap,
+  });
 
   final String label;
+  final String spoken;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      button: true,
+      label: spoken,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: _button(context),
+    );
+  }
+
+  Widget _button(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

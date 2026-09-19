@@ -11,6 +11,9 @@ import '../widgets/top_bar_button.dart';
 const String _header = 'CABINET SETTINGS';
 const String _backGlyph = '‹';
 
+/// What the chevron is, said out loud.
+const String _backLabel = 'Back';
+
 /// The label and hint each switch carries, in the order they are drawn.
 ///
 /// Four are the design's own copy, verbatim. `High contrast` is not — the
@@ -61,6 +64,7 @@ class SettingsScreen extends StatelessWidget {
                         glyph: _backGlyph,
                         fontSize: AppFontSizes.glyph17,
                         onTap: () => Navigator.of(context).maybePop(),
+                        label: _backLabel,
                       ),
                     ],
                   ),
@@ -69,7 +73,10 @@ class SettingsScreen extends StatelessWidget {
                   child: ListView(
                     padding: AppInsets.screenBelowBar,
                     children: <Widget>[
-                      Text(_header, style: context.text.sectionHeader),
+                      Semantics(
+                        header: true,
+                        child: Text(_header, style: context.text.sectionHeader),
+                      ),
                       const SizedBox(height: AppSpacing.s10),
                       for (final AppSetting setting in AppSetting.values) ...<Widget>[
                         SettingsRow(

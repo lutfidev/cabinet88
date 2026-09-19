@@ -59,6 +59,21 @@ abstract final class AppLetterSpacing {
   static const double wordmarkSub = 1.0;
 }
 
+/// How far the player's own font-size setting is allowed to carry.
+///
+/// Not a design value: the design file has no scaling pass at all. Derived in
+/// `docs/design-tokens.md` section 15, and applied in exactly one place.
+abstract final class AppTextScale {
+  /// The play shell's ceiling.
+  ///
+  /// Every other screen scrolls, so it honours the system setting to whatever
+  /// maximum the platform offers. The play shell cannot: the field is square
+  /// and shares one screen with its controls, so every point of text scale
+  /// comes out of the board. At this ceiling a 320px phone still leaves the
+  /// field larger than [AppSizes.playFieldMin].
+  static const double playCeiling = 1.3;
+}
+
 /// Font weights. Press Start 2P has one weight; these apply to Space Grotesk.
 abstract final class AppFontWeights {
   static const FontWeight regular = FontWeight.w400;

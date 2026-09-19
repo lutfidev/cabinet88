@@ -24,11 +24,16 @@ class SettingsRow extends StatelessWidget {
     return Material(
       color: context.palette.surfaceRow,
       borderRadius: AppBorderRadius.tile,
-      child: InkWell(
+      child: Semantics(
+        container: true,
+        toggled: value,
+        label: label,
+        hint: hint,
         onTap: onTap,
-        borderRadius: AppBorderRadius.tile,
-        child: Semantics(
-          toggled: value,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppBorderRadius.tile,
           child: Padding(
             padding: AppInsets.settingsRow,
             child: Row(

@@ -35,14 +35,31 @@ class TrophiesTab extends StatelessWidget {
   }
 }
 
+/// Locked and unlocked are drawn as a ring colour and an opacity. Neither
+/// reaches a screen reader, so the row says which it is.
+const String _unlockedLabel = 'Unlocked';
+const String _lockedLabel = 'Locked';
+
 class _TrophyRow extends StatelessWidget {
   const _TrophyRow({required this.trophy, required this.unlocked});
 
   final Trophy trophy;
   final bool unlocked;
 
+  String get _spoken => '${trophy.name}. ${trophy.description}. '
+      '${unlocked ? _unlockedLabel : _lockedLabel}.';
+
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: _spoken,
+      excludeSemantics: true,
+      child: _row(context),
+    );
+  }
+
+  Widget _row(BuildContext context) {
     final Color ring =
         unlocked ? AppColors.accentHighlight : context.palette.textLocked;
 

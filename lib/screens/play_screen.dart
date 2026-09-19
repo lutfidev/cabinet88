@@ -17,6 +17,7 @@ import '../widgets/play/play_controls.dart';
 import '../widgets/play/play_field.dart';
 import '../widgets/play/play_hud.dart';
 import '../widgets/play/play_overlay.dart';
+import '../widgets/play/play_text_scale.dart';
 import '../widgets/play/play_top_bar.dart';
 import '../widgets/rise_route.dart';
 
@@ -38,6 +39,23 @@ const String _footer = 'Swipe the screen, use the D-pad, or arrow keys';
 
 String _overNote(int score) =>
     'You scored ${Cabinet.formatScore(score)}. The wall always wins eventually.';
+
+/// The shell's chrome is silkscreen: a chevron, four triangles and five words
+/// in capitals. None of it survives being read out, so every control hands a
+/// screen reader the sentence version instead. Recorded in
+/// `docs/design-tokens.md` section 15.
+const String _exitSpoken = 'Exit';
+const String _pauseSpoken = 'Pause';
+const String _resumeSpoken = 'Resume';
+const String _startSpoken = 'Start';
+const String _resetSpoken = 'Reset';
+const String _playAgainSpoken = 'Play again';
+
+String _scoreSpoken(int score) => 'Score ${Cabinet.formatScore(score)}';
+
+String _levelSpoken(int level) => 'Level $level';
+
+String _bestSpoken(int best) => 'Best ${Cabinet.spokenScore(best)}';
 
 /// Keys the shell accepts, from design-tokens section 12: arrows and WASD.
 final Map<LogicalKeyboardKey, GameInput> _keyMap = <LogicalKeyboardKey, GameInput>{
@@ -267,57 +285,72 @@ class _PlayScreenState extends State<PlayScreen>
     final int best = context.select<ProgressService, int>(
         (ProgressService p) => p.bestFor(widget.cabinet.id));
 
-    return Scaffold(
-      backgroundColor: AppColors.playBackground,
-      body: SafeArea(
-        child: Focus(
-          autofocus: true,
-          onKeyEvent: _handleKey,
-          child: ValueListenableBuilder<GameStatus>(
-            valueListenable: _game.status,
-            builder: (BuildContext context, GameStatus status, Widget? child) {
-              return Column(
-                children: <Widget>[
-                  PlayTopBar(
-                    exitLabel: _exit,
-                    title: widget.cabinet.title.toUpperCase(),
-                    pauseLabel:
-                        status.phase == GamePhase.paused ? _resume : _pause,
-                    onExit: () => Navigator.of(context).maybePop(),
-                    onTogglePause: _togglePause,
-                  ),
-                  PlayHud(
-                    scoreLabel: _scoreLabel,
-                    score: Cabinet.formatScore(status.score),
-                    levelLabel: _levelLabel,
-                    level: status.level.toString(),
-                    bestLabel: _bestLabel,
-                    best: Cabinet.scoreLabel(best),
-                  ),
-                  Expanded(
-                    child: _isDemo
-                        ? SingleChildScrollView(
-                            child: DemoMode(
-                              cabinet: widget.cabinet,
-                              playable: GameCatalog.playableCabinet,
-                              onTryPlayable: _openPlayable,
+    // The one screen in the app that caps the font-size setting: the
+    // field is square and shares the screen with the controls, so every
+    // point of scale is taken out of the board.
+    return PlayTextScale(
+      child: Scaffold(
+        backgroundColor: AppColors.playBackground,
+        body: SafeArea(
+          child: Focus(
+            autofocus: true,
+            onKeyEvent: _handleKey,
+            child: ValueListenableBuilder<GameStatus>(
+              valueListenable: _game.status,
+              builder: (BuildContext context, GameStatus status, Widget? child) {
+                return Column(
+                  children: <Widget>[
+                    PlayTopBar(
+                      exitLabel: _exit,
+                      exitSpoken: _exitSpoken,
+                      title: widget.cabinet.title.toUpperCase(),
+                      pauseLabel:
+                          status.phase == GamePhase.paused ? _resume : _pause,
+                      pauseSpoken: status.phase == GamePhase.paused
+                          ? _resumeSpoken
+                          : _pauseSpoken,
+                      onExit: () => Navigator.of(context).maybePop(),
+                      onTogglePause: _togglePause,
+                    ),
+                    PlayHud(
+                      scoreLabel: _scoreLabel,
+                      score: Cabinet.formatScore(status.score),
+                      scoreSpoken: _scoreSpoken(status.score),
+                      levelLabel: _levelLabel,
+                      level: status.level.toString(),
+                      levelSpoken: _levelSpoken(status.level),
+                      bestLabel: _bestLabel,
+                      best: Cabinet.scoreLabel(best),
+                      bestSpoken: _bestSpoken(best),
+                    ),
+                    Expanded(
+                      child: _isDemo
+                          ? SingleChildScrollView(
+                              child: DemoMode(
+                                cabinet: widget.cabinet,
+                                playable: GameCatalog.playableCabinet,
+                                onTryPlayable: _openPlayable,
+                              ),
+                            )
+                          : _PlayBody(
+                              painter: _painter,
+                              overlay: _overlayFor(status),
+                              showDpad: showDpad,
+                              actionLabel:
+                                  status.phase.isRunning ? _reset : _start,
+                              actionSpoken: status.phase.isRunning
+                                  ? _resetSpoken
+                                  : _startSpoken,
+                              onPointerDown: _onPointerDown,
+                              onPointerUp: _onPointerUp,
+                              onDirection: _handleInput,
+                              onAction: _handleAction,
                             ),
-                          )
-                        : _PlayBody(
-                            painter: _painter,
-                            overlay: _overlayFor(status),
-                            showDpad: showDpad,
-                            actionLabel:
-                                status.phase.isRunning ? _reset : _start,
-                            onPointerDown: _onPointerDown,
-                            onPointerUp: _onPointerUp,
-                            onDirection: _handleInput,
-                            onAction: _handleAction,
-                          ),
-                  ),
-                ],
-              );
-            },
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -335,6 +368,7 @@ class _PlayScreenState extends State<PlayScreen>
           titleColor: AppColors.accentHighlight,
           note: _idleNote,
           ctaLabel: _start,
+          ctaSpoken: _startSpoken,
           onCta: _handleAction,
         );
       case GamePhase.paused:
@@ -343,6 +377,7 @@ class _PlayScreenState extends State<PlayScreen>
           titleColor: AppColors.accentHighlight,
           note: _pausedNote,
           ctaLabel: _resume,
+          ctaSpoken: _resumeSpoken,
           onCta: _handleAction,
         );
       case GamePhase.over:
@@ -351,6 +386,7 @@ class _PlayScreenState extends State<PlayScreen>
           titleColor: AppColors.accentDanger,
           note: _overNote(status.score),
           ctaLabel: _playAgain,
+          ctaSpoken: _playAgainSpoken,
           onCta: _handleAction,
         );
     }
@@ -364,6 +400,7 @@ class _PlayBody extends StatelessWidget {
     required this.overlay,
     required this.showDpad,
     required this.actionLabel,
+    required this.actionSpoken,
     required this.onPointerDown,
     required this.onPointerUp,
     required this.onDirection,
@@ -374,6 +411,7 @@ class _PlayBody extends StatelessWidget {
   final Widget? overlay;
   final bool showDpad;
   final String actionLabel;
+  final String actionSpoken;
   final PointerDownEventListener onPointerDown;
   final PointerUpEventListener onPointerUp;
   final ValueChanged<GameInput> onDirection;
@@ -401,14 +439,18 @@ class _PlayBody extends StatelessWidget {
           PlayControls(
             showDpad: showDpad,
             actionLabel: actionLabel,
+            actionSpoken: actionSpoken,
             onDirection: onDirection,
             onAction: onAction,
           ),
           const SizedBox(height: AppSpacing.s18),
-          Text(
-            _footer,
-            textAlign: TextAlign.center,
-            style: context.text.caption.copyWith(color: context.palette.textDisabled),
+          Semantics(
+            container: true,
+            child: Text(
+              _footer,
+              textAlign: TextAlign.center,
+              style: context.text.caption.copyWith(color: context.palette.textDisabled),
+            ),
           ),
         ],
       ),

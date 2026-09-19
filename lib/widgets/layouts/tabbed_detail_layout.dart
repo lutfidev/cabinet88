@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../detail/overview_tab.dart';
 import '../detail/scores_tab.dart';
 import '../detail/trophies_tab.dart';
+import '../touch_target.dart';
 
 /// The three tabs the design gives the cabinet file. There are no others.
 enum DetailTab {
@@ -148,6 +149,9 @@ class _TabStrip extends StatelessWidget {
   }
 }
 
+/// One tab. The pill is drawn at the design's height and the target around it
+/// is the platform's 48, which is what makes the strip taller than the design
+/// draws it.
 class _Tab extends StatelessWidget {
   const _Tab({required this.tab, required this.active, required this.onTap});
 
@@ -157,22 +161,32 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Semantics(
+      container: true,
+      button: true,
+      selected: active,
+      label: tab.label,
       onTap: onTap,
-      borderRadius: AppBorderRadius.tab,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: active ? AppColors.accentPrimary : null,
+      excludeSemantics: true,
+      child: TouchTarget(
+        child: InkWell(
+          onTap: onTap,
           borderRadius: AppBorderRadius.tab,
-        ),
-        child: Padding(
-          padding: AppInsets.tab,
-          child: Text(
-            tab.label,
-            textAlign: TextAlign.center,
-            style: active
-                ? context.text.tabLabel.copyWith(color: AppColors.onAccent)
-                : context.text.tabLabel,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: active ? AppColors.accentPrimary : null,
+              borderRadius: AppBorderRadius.tab,
+            ),
+            child: Padding(
+              padding: AppInsets.tab,
+              child: Text(
+                tab.label,
+                textAlign: TextAlign.center,
+                style: active
+                    ? context.text.tabLabel.copyWith(color: AppColors.onAccent)
+                    : context.text.tabLabel,
+              ),
+            ),
           ),
         ),
       ),

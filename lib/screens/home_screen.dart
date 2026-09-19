@@ -7,12 +7,18 @@ import '../widgets/layouts/playlist_layout.dart';
 import '../widgets/pixel_sprite.dart';
 import '../widgets/screen_rise.dart';
 import '../widgets/sprite_maps.dart';
+import '../widgets/touch_target.dart';
 import 'cabinet_detail_screen.dart';
 import 'settings_screen.dart';
 
 /// Copy, verbatim from the design.
 const String _greeting = 'GOOD EVENING';
 const String _heading = 'The vault is open';
+
+/// What the avatar does here. The design taps it through to a profile screen
+/// the architecture does not have; this app has settings behind it, so that
+/// is what the screen reader is told.
+const String _avatarLabel = 'Settings';
 
 /// The home screen: a greeting header over the Playlist layout.
 ///
@@ -69,7 +75,10 @@ class _GreetingHeader extends StatelessWidget {
             children: <Widget>[
               Text(_greeting, style: context.text.greetingEyebrow),
               const SizedBox(height: AppSpacing.s6),
-              Text(_heading, style: context.text.screenTitle),
+              Semantics(
+                header: true,
+                child: Text(_heading, style: context.text.screenTitle),
+              ),
             ],
           ),
         ),
@@ -87,24 +96,36 @@ class _AvatarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(SettingsScreen.route()),
-      child: Container(
-        width: AppSizes.avatarButton,
-        height: AppSizes.avatarButton,
-        decoration: BoxDecoration(
-          color: AppColors.secondaryTintFill,
-          borderRadius: AppBorderRadius.tile,
-          border: Border.all(
-            color: AppColors.secondaryTintBorder,
-            width: AppBorderWidths.hairline,
-          ),
-        ),
-        child: const Center(
-          child: PixelSprite(
-            spriteId: SpriteMaps.avatar,
-            pixelSize: AppSizes.spriteNav,
-            glow: AppColors.accentSecondary,
+    void open() => Navigator.of(context).push(SettingsScreen.route());
+
+    // Drawn at the design's 42px, targeted at the platform's 48.
+    return Semantics(
+      container: true,
+      button: true,
+      label: _avatarLabel,
+      onTap: open,
+      excludeSemantics: true,
+      child: TouchTarget(
+        child: GestureDetector(
+          onTap: open,
+          child: Container(
+            width: AppSizes.avatarButton,
+            height: AppSizes.avatarButton,
+            decoration: BoxDecoration(
+              color: AppColors.secondaryTintFill,
+              borderRadius: AppBorderRadius.tile,
+              border: Border.all(
+                color: AppColors.secondaryTintBorder,
+                width: AppBorderWidths.hairline,
+              ),
+            ),
+            child: const Center(
+              child: PixelSprite(
+                spriteId: SpriteMaps.avatar,
+                pixelSize: AppSizes.spriteNav,
+                glow: AppColors.accentSecondary,
+              ),
+            ),
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import '../../models/cabinet.dart';
 import '../../theme/app_theme.dart';
 import '../crt_overlay.dart';
 import '../pixel_sprite.dart';
+import '../touch_target.dart';
 
 /// Copy, verbatim from the design's demo-mode branch.
 const String _pressStart = 'PRESS START';
@@ -13,6 +14,9 @@ String _caption(String playableTitle) =>
     'playable; the other nine cabinets drop in behind the same shell.';
 
 String _tryLabel(String playableTitle) => 'TRY ${playableTitle.toUpperCase()}';
+
+/// The same call to action, in the case a screen reader should say it.
+String _trySpoken(String playableTitle) => 'Try $playableTitle';
 
 /// What the nine cabinets with no game show instead of a play field.
 ///
@@ -55,7 +59,11 @@ class DemoMode extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.s18),
-          _TryCta(label: _tryLabel(playable.title), onTap: onTryPlayable),
+          _TryCta(
+            label: _tryLabel(playable.title),
+            spoken: _trySpoken(playable.title),
+            onTap: onTryPlayable,
+          ),
         ],
       ),
     );
@@ -96,11 +104,14 @@ class _DemoScreen extends StatelessWidget {
                   pixelSize: AppSizes.spriteExtraLarge,
                   glow: cabinet.hue,
                 ),
+                // `PRESS START` starts nothing on a cabinet with no game, so
+                // a screen reader is not told to press it. The caption and
+                // the call to action below carry what this screen is.
                 const Positioned(
                   left: 0,
                   right: 0,
                   bottom: AppSpacing.s14,
-                  child: _Blink(),
+                  child: ExcludeSemantics(child: _Blink()),
                 ),
               ],
             ),
@@ -156,31 +167,45 @@ class _BlinkState extends State<_Blink> with SingleTickerProviderStateMixin {
 }
 
 class _TryCta extends StatelessWidget {
-  const _TryCta({required this.label, required this.onTap});
+  const _TryCta({
+    required this.label,
+    required this.spoken,
+    required this.onTap,
+  });
 
   final String label;
+  final String spoken;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppBorderRadius.control,
-        child: Container(
-          padding: AppInsets.demoCta,
-          decoration: BoxDecoration(
+    return Semantics(
+      container: true,
+      button: true,
+      label: spoken,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: TouchTarget(
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: AppBorderRadius.control,
-            border: Border.all(
-              color: AppColors.positiveTintCta,
-              width: AppBorderWidths.hairline,
+            child: Container(
+              padding: AppInsets.demoCta,
+              decoration: BoxDecoration(
+                borderRadius: AppBorderRadius.control,
+                border: Border.all(
+                  color: AppColors.positiveTintCta,
+                  width: AppBorderWidths.hairline,
+                ),
+              ),
+              child: Text(
+                label,
+                style: context.text.pixelLabel
+                    .copyWith(color: AppColors.accentPositive),
+              ),
             ),
-          ),
-          child: Text(
-            label,
-            style: context.text.pixelLabel
-                .copyWith(color: AppColors.accentPositive),
           ),
         ),
       ),

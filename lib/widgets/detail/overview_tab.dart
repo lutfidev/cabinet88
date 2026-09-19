@@ -37,6 +37,7 @@ class OverviewTab extends StatelessWidget {
                 child: _StatTile(
                   value: Cabinet.scoreLabel(best),
                   label: bestLabel,
+                  spoken: Cabinet.spokenScore(best),
                 ),
               ),
               const SizedBox(width: AppSpacing.s10),
@@ -63,13 +64,27 @@ class OverviewTab extends StatelessWidget {
 
 /// One stat tile. The Tabbed variant draws these without a border.
 class _StatTile extends StatelessWidget {
-  const _StatTile({required this.value, required this.label});
+  const _StatTile({required this.value, required this.label, this.spoken});
 
   final String value;
   final String label;
 
+  /// What a screen reader hears where the drawn [value] does not survive
+  /// being read out — an em dash for a score nobody has set.
+  final String? spoken;
+
   @override
   Widget build(BuildContext context) {
+    // A tile reads as one fact, not as a number followed by a caption.
+    return Semantics(
+      container: true,
+      label: '$label: ${spoken ?? value}',
+      excludeSemantics: true,
+      child: _tile(context),
+    );
+  }
+
+  Widget _tile(BuildContext context) {
     return Container(
       padding: AppInsets.statTile,
       decoration: BoxDecoration(

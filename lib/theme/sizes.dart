@@ -1,5 +1,7 @@
 import 'package:flutter/painting.dart';
 
+import 'spacing.dart';
+
 /// Fixed component boxes the design pins to an exact size.
 ///
 /// Separate from the spacing scale: these are the dimensions of specific
@@ -65,4 +67,20 @@ abstract final class AppSizes {
 
   /// A sprite's glow blur is 1.2x its pixel size.
   static const double spriteGlowFactor = 1.2;
+
+  /// The platform's minimum touch target: Android's 48dp, which is also
+  /// Flutter's own `kMinInteractiveDimension`.
+  ///
+  /// A platform floor, not a design value — the design draws several controls
+  /// smaller than this. `TouchTarget` grows their hit area to it without
+  /// moving a painted pixel. See `docs/design-tokens.md` section 15.
+  static const double minTouchTarget = 48;
+
+  /// The smallest the play field may be squeezed to: the 3x3 D-pad block it
+  /// is played with, three [dpadKey] keys and the two gutters between them.
+  ///
+  /// A field smaller than the control that drives it is not a game any more.
+  /// The play shell's text-scale ceiling is derived from this floor, in
+  /// `docs/design-tokens.md` section 15.
+  static const double playFieldMin = dpadKey * 3 + AppSpacing.s5 * 2;
 }

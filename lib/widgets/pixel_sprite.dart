@@ -11,6 +11,10 @@ import 'sprite_maps.dart';
 /// [glow] reproduces the design's `drop-shadow(0 0 {px * 1.2}px {hue})` — one
 /// blurred pass of the whole silhouette beneath the art, not a halo per cell.
 /// Pass null for no glow, which is what the playlist row does.
+///
+/// Every sprite is hidden from the screen reader here, in the one place they
+/// all pass through: the art repeats what the row, tile or header beside it
+/// already says, and none of it carries meaning of its own.
 class PixelSprite extends StatelessWidget {
   const PixelSprite({
     super.key,
@@ -33,12 +37,14 @@ class PixelSprite extends StatelessWidget {
         SpriteMaps.byId[spriteId] ?? SpriteMaps.byId[SpriteMaps.fallbackId]!;
     final double extent = SpriteMaps.size * pixelSize;
 
-    return SizedBox(
-      width: extent,
-      height: extent,
-      child: CustomPaint(
-        size: Size.square(extent),
-        painter: _PixelSpritePainter(map: map, pixelSize: pixelSize, glow: glow),
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: extent,
+        height: extent,
+        child: CustomPaint(
+          size: Size.square(extent),
+          painter: _PixelSpritePainter(map: map, pixelSize: pixelSize, glow: glow),
+        ),
       ),
     );
   }

@@ -13,24 +13,28 @@ class PixelToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: AppSizes.toggleTrack.width,
-      height: AppSizes.toggleTrack.height,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: value ? AppColors.accentPrimary : context.palette.surfaceToggleOff,
-          borderRadius: AppBorderRadius.row,
-        ),
-        child: Padding(
-          padding: AppInsets.toggleTrack,
-          child: Align(
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-            child: const SizedBox.square(
-              dimension: AppSizes.toggleKnob,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.onAccent,
-                  shape: BoxShape.circle,
+    // The row around it is the control: it carries the label, the state and
+    // the tap. The knob is a picture of that state, and says nothing twice.
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: AppSizes.toggleTrack.width,
+        height: AppSizes.toggleTrack.height,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: value ? AppColors.accentPrimary : context.palette.surfaceToggleOff,
+            borderRadius: AppBorderRadius.row,
+          ),
+          child: Padding(
+            padding: AppInsets.toggleTrack,
+            child: Align(
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: const SizedBox.square(
+                dimension: AppSizes.toggleKnob,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.onAccent,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
             ),

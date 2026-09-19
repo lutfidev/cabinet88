@@ -17,6 +17,9 @@ const String _eyebrow = 'CABINET FILE';
 const String _backGlyph = '‹';
 const String _starGlyph = '☆';
 
+/// What the chevron is, said out loud.
+const String _backLabel = 'Back';
+
 /// The cabinet file: one cabinet's header, and its three tabs.
 ///
 /// The header and the tab strip are pinned; only the open tab scrolls. The
@@ -111,11 +114,26 @@ class _TopBar extends StatelessWidget {
             glyph: _backGlyph,
             fontSize: AppFontSizes.glyph17,
             onTap: () => Navigator.of(context).maybePop(),
+            label: _backLabel,
           ),
-          Text(_eyebrow, style: context.text.topBarEyebrow),
+          // The two buttons are fixed; the label between them is what gives
+          // way, so no font-size setting can push the bar off a narrow phone.
+          Flexible(
+            child: Semantics(
+              header: true,
+              child: Text(
+                _eyebrow,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.text.topBarEyebrow,
+              ),
+            ),
+          ),
           // The design draws this star with no handler and no filled state, so
           // it renders and does nothing. Inventing a favourite would mean
-          // inventing its colour too.
+          // inventing its colour too, and a screen reader is told nothing
+          // about a control that is not one.
           const TopBarButton(
             glyph: _starGlyph,
             fontSize: AppFontSizes.glyph15,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/cabinet.dart';
 import '../theme/app_theme.dart';
 import 'pixel_sprite.dart';
+import 'touch_target.dart';
 
 /// The detail screen's header: art, title, meta, and the primary play button.
 ///
@@ -43,16 +44,29 @@ class DetailHeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(
-                  cabinet.title,
-                  style: context.text.detailTitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppSpacing.s7),
-                Text(
-                  '${cabinet.genre.label} · ${cabinet.year}',
-                  style: context.text.detailMeta,
+                // Title and meta are one fact, and the middle dot between
+                // genre and year is punctuation, not a word.
+                Semantics(
+                  container: true,
+                  label: '${cabinet.title}. ${cabinet.genre.label}, ${cabinet.year}.',
+                  excludeSemantics: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        cabinet.title,
+                        style: context.text.detailTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSpacing.s7),
+                      Text(
+                        '${cabinet.genre.label} · ${cabinet.year}',
+                        style: context.text.detailMeta,
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s11),
                 _PlayPill(
@@ -95,6 +109,10 @@ class _ArtWell extends StatelessWidget {
 }
 
 /// The green pill. Sized by its label, as the design's inline-block is.
+///
+/// The design draws it ~38px tall, under the platform minimum — the touch
+/// target deferred from phase 3. It keeps that height and gains the target
+/// around it, which costs the header card 10px.
 class _PlayPill extends StatelessWidget {
   const _PlayPill({required this.label, required this.onTap});
 
@@ -103,16 +121,25 @@ class _PlayPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Semantics(
+      container: true,
+      button: true,
+      label: label,
       onTap: onTap,
-      borderRadius: AppBorderRadius.tab,
-      child: Container(
-        padding: AppInsets.playPill,
-        decoration: const BoxDecoration(
-          color: AppColors.accentPositive,
+      excludeSemantics: true,
+      child: TouchTarget(
+        child: InkWell(
+          onTap: onTap,
           borderRadius: AppBorderRadius.tab,
+          child: Container(
+            padding: AppInsets.playPill,
+            decoration: const BoxDecoration(
+              color: AppColors.accentPositive,
+              borderRadius: AppBorderRadius.tab,
+            ),
+            child: Text(label, style: context.text.playButton),
+          ),
         ),
-        child: Text(label, style: context.text.playButton),
       ),
     );
   }

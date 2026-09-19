@@ -20,6 +20,10 @@ class ScoresTab extends StatelessWidget {
   }
 }
 
+/// The player's own row says so, because the tint that marks it on screen
+/// carries nothing a screen reader can hear.
+const String _yourRow = 'your score';
+
 class _LeaderboardRow extends StatelessWidget {
   const _LeaderboardRow({required this.entry});
 
@@ -30,8 +34,22 @@ class _LeaderboardRow extends StatelessWidget {
       ? AppColors.rankColors[entry.rank - 1]
       : context.palette.textFaint;
 
+  /// `01 ZED 12,480` read out in order is three numbers and a word.
+  String get _spoken => entry.isYou
+      ? 'Rank ${entry.rank}. ${entry.handle}, $_yourRow. ${entry.scoreLabel}.'
+      : 'Rank ${entry.rank}. ${entry.handle}. ${entry.scoreLabel}.';
+
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: _spoken,
+      excludeSemantics: true,
+      child: _row(context),
+    );
+  }
+
+  Widget _row(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: entry.isYou ? AppColors.primaryTintRow : null,

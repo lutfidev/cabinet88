@@ -14,8 +14,24 @@ class CabinetTile extends StatelessWidget {
   final Cabinet cabinet;
   final VoidCallback onTap;
 
+  /// One sentence, instead of the three fragments the row draws. Read out in
+  /// order, `Serpent 88 · Arcade · 1,204 plays · 12,480` is a list of nouns.
+  String get _spoken => '${cabinet.title}. ${cabinet.genre.label}, '
+      '${cabinet.plays} plays. High score ${Cabinet.spokenScore(cabinet.highScore)}.';
+
   @override
   Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      button: true,
+      label: _spoken,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: _row(context),
+    );
+  }
+
+  Widget _row(BuildContext context) {
     return InkWell(
       onTap: onTap,
       highlightColor: context.palette.surfacePressed,

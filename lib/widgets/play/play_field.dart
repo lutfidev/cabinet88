@@ -38,12 +38,16 @@ class PlayField extends StatelessWidget {
               tone: CrtTone.art,
               vignette: false,
               // A live game repaints every step, so the layer is never worth
-            // caching — `willChange` keeps the raster cache out of the way.
-            child: CustomPaint(
-              painter: painter,
-              isComplex: true,
-              willChange: true,
-            ),
+              // caching — `willChange` keeps the raster cache out of the way.
+              // Nothing in the board is announced: the HUD above it carries
+              // the score, and the overlay carries the state of the run.
+              child: ExcludeSemantics(
+                child: CustomPaint(
+                  painter: painter,
+                  isComplex: true,
+                  willChange: true,
+                ),
+              ),
             ),
           ),
           if (overlay != null) Positioned.fill(child: overlay!),
