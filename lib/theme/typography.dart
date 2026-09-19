@@ -8,6 +8,21 @@ import 'package:flutter/painting.dart';
 abstract final class AppFonts {
   static const String pixelFamily = 'Press Start 2P';
   static const String bodyFamily = 'Space Grotesk';
+
+  /// The five glyphs the body face does not carry.
+  ///
+  /// Space Grotesk has no geometric shapes, so the D-pad's four arrows and the
+  /// cabinet file's star fall through it. In the browser the design rendered
+  /// them from whatever system font happened to have them; on Android that
+  /// would be a fallback nothing in this repository controls, and Space
+  /// Grotesk's own `.notdef` — a question mark in a box — is what shows if the
+  /// fallback ever misses. On the primary control surface of the only playable
+  /// cabinet, that is not a risk worth carrying, so the glyphs are vendored.
+  ///
+  /// A five-character subset, 5KB. Press Start 2P already has all of them, but
+  /// its versions are pixelated, and choosing those would be a design decision
+  /// rather than a fix.
+  static const String symbolFamily = 'Noto Sans Symbols 2';
 }
 
 /// The raw size scale, for the rare widget that needs a bare number rather

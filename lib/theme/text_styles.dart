@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 import 'palette.dart';
@@ -19,8 +18,14 @@ class AppTextStyles {
 
   final AppPalette palette;
 
+  // Both faces are bundled under the family names in `typography.dart` and
+  // declared in `pubspec.yaml`. Nothing here fetches anything: a release build
+  // carries no INTERNET permission, so a downloaded face would resolve to the
+  // system default and lose the whole pixel treatment.
+
   TextStyle _pixel(double size, Color color, {double? letterSpacing, double? height}) =>
-      GoogleFonts.pressStart2p(
+      TextStyle(
+        fontFamily: AppFonts.pixelFamily,
         fontSize: size,
         color: color,
         letterSpacing: letterSpacing,
@@ -33,7 +38,16 @@ class AppTextStyles {
     FontWeight weight = AppFontWeights.regular,
     double? height,
   }) =>
-      GoogleFonts.spaceGrotesk(fontSize: size, color: color, fontWeight: weight, height: height);
+      TextStyle(
+        fontFamily: AppFonts.bodyFamily,
+        // The D-pad arrows and the star are not in Space Grotesk. Nothing else
+        // in the app reaches past the first family.
+        fontFamilyFallback: const <String>[AppFonts.symbolFamily],
+        fontSize: size,
+        color: color,
+        fontWeight: weight,
+        height: height,
+      );
 
   // --- Pixel face ------------------------------------------------------------
 

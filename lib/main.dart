@@ -8,10 +8,12 @@ import 'services/progress_service.dart';
 import 'services/settings_service.dart';
 import 'services/trophy_service.dart';
 import 'theme/app_theme.dart';
+import 'theme/font_licenses.dart';
 import 'widgets/crt_overlay.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FontLicenses.register();
   // Settings are read before the first frame, so nothing renders with a
   // default it is about to replace — a scanline overlay that arrived one frame
   // late would flicker on every launch. Progress comes up with it, so no

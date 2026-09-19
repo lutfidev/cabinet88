@@ -38,9 +38,6 @@ dependencies:
   # State management. Do not introduce a second solution.
   provider: ^6.1.2
 
-  # Press Start 2P and Space Grotesk, the two faces in the design.
-  google_fonts: ^6.2.1
-
   # Settings persistence. The only thing Cabinet88 writes to disk in phase 4.
   shared_preferences: ^2.3.2
 
@@ -66,33 +63,36 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
-
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  # Both faces are vendored, not fetched. A release build declares no INTERNET
+  # permission, so a runtime download would silently fall back to the system
+  # face and take the whole pixel treatment with it. See docs/design-tokens.md
+  # section 1.
   #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  # The two family names are the constants in lib/theme/typography.dart.
+  # Nothing else in the app may name a face.
+  assets:
+    - assets/fonts/OFL-PressStart2P.txt
+    - assets/fonts/OFL-SpaceGrotesk.txt
+    - assets/fonts/OFL-NotoSansSymbols2.txt
+
+  fonts:
+    - family: Press Start 2P
+      fonts:
+        - asset: assets/fonts/PressStart2P-Regular.ttf
+    - family: Space Grotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
+          weight: 700
+    # Five glyphs Space Grotesk does not have: the four D-pad arrows and the
+    # star on the cabinet file. A subset, 5KB, standing in for the system font
+    # a browser silently borrowed in the design and an Android device would
+    # have had to find for itself. See lib/theme/typography.dart.
+    - family: Noto Sans Symbols 2
+      fonts:
+        - asset: assets/fonts/NotoSansSymbols2-Subset.ttf
