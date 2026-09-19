@@ -45,15 +45,17 @@ Color _over(Color foreground, Color background) => Color.from(
       blue: foreground.a * foreground.b + (1 - foreground.a) * background.b,
     );
 
-/// WCAG contrast ratio against [AppColors.background].
-double _contrast(Color text) {
-  const Color background = AppColors.background;
+/// WCAG contrast ratio of [text] read over [background].
+double _contrastOn(Color text, Color background) {
   final double a = _over(text, background).computeLuminance();
   final double b = background.computeLuminance();
   final double lighter = a > b ? a : b;
   final double darker = a > b ? b : a;
   return (lighter + 0.05) / (darker + 0.05);
 }
+
+/// WCAG contrast ratio against [AppColors.background].
+double _contrast(Color text) => _contrastOn(text, AppColors.background);
 
 void main() {
   test('the table covers every token on the palette', () {
@@ -97,5 +99,33 @@ void main() {
     expect(_contrast(AppPalette.standard.textLocked), lessThan(4.5));
     expect(_contrast(AppPalette.standard.textDisabled), lessThan(4.5));
     expect(_contrast(AppPalette.standard.textPrimary), greaterThanOrEqualTo(4.5));
+  });
+
+  test('text on a filled accent: the green pill clears AA, the magenta pill does not', () {
+    // Neither pair varies by theme. Both colours live in [AppColors], and
+    // section 14's three rules reach the text ladder, the borders and the
+    // surfaces — never the accent hues. What is measured here is what both
+    // palettes ship.
+    expect(
+      _contrastOn(AppColors.onAccentPositive, AppColors.accentPositive),
+      greaterThanOrEqualTo(4.5),
+      reason: 'the play pill',
+    );
+    // White on #ff2d8a: the design's active tab, and any filled primary
+    // button. 3.51 against AA's 4.5 — the one string in the app that misses.
+    // The standard palette keeps it, because the two hues are the design's own.
+    expect(_contrastOn(AppColors.onAccent, AppColors.accentPrimary), closeTo(3.51, 0.01));
+    // High contrast answers it with the design's own other filled pill.
+    expect(
+      _contrastOn(AppColors.onAccentPositive, AppColors.accentPrimary),
+      greaterThanOrEqualTo(4.5),
+    );
+  });
+
+  test('the open tab takes dark type only in high contrast', () {
+    expect(const AppTextStyles(AppPalette.standard).tabLabelActive.color,
+        AppColors.onAccent);
+    expect(const AppTextStyles(AppPalette.highContrast).tabLabelActive.color,
+        AppColors.onAccentPositive);
   });
 }

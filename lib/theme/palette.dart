@@ -42,7 +42,18 @@ class AppPalette {
     required this.border,
     required this.borderDivider,
     required this.borderDemo,
+    required this.isHighContrast,
   });
+
+  /// Which of the two palettes this is.
+  ///
+  /// Not a colour, and deliberately not one: every token below keeps its base
+  /// RGB and moves only in alpha, and `test/palette_test.dart` holds that
+  /// guarantee. The one place the two themes need to disagree about a *hue* is
+  /// the type on a filled magenta pill, where white measures 3.51 against AA's
+  /// 4.5. That choice is made in `text_styles.dart`, beside every other style
+  /// decision, and this flag is what it reads.
+  final bool isHighContrast;
 
   // --- Text: a ladder of alphas over #f4eeff --------------------------------
 
@@ -109,6 +120,7 @@ class AppPalette {
   /// The design, verbatim. Alpha is baked into the hex so nothing has to
   /// compose opacity at the call site.
   static const AppPalette standard = AppPalette(
+    isHighContrast: false,
     textPrimary: Color(0xFFF4EEFF), // #f4eeff
     textBody: Color(0xB8F4EEFF), // .72
     textSecondary: Color(0xB3F4EEFF), // .70
@@ -145,6 +157,7 @@ class AppPalette {
   /// 3. **Surfaces** — alpha x1.8, enough to separate a fill from the ground
   ///    without turning it into a grey slab.
   static const AppPalette highContrast = AppPalette(
+    isHighContrast: true,
     textPrimary: Color(0xFFF4EEFF), // 1.00 — already full
     textBody: Color(0xE3F4EEFF), // .72 -> .89
     textSecondary: Color(0xE1F4EEFF), // .70 -> .88

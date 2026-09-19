@@ -18,7 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Cabinet get _serpent => CabinetCatalog.byId(CabinetCatalog.serpentId);
 Cabinet get _minefield => CabinetCatalog.byId('minefield');
 
-Future<Widget> _harness(Widget home) async {
+Future<Widget> _harness(Widget home, {AppPalette? palette}) async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SettingsService settings = SettingsService();
   final ProgressService progress = ProgressService();
@@ -39,21 +39,38 @@ Future<Widget> _harness(Widget home) async {
             ProgressTrophyService(p),
       ),
     ],
-    child: MaterialApp(theme: AppTheme.dark, home: home),
+    child: MaterialApp(
+      theme: AppTheme.themeFor(palette ?? AppPalette.standard),
+      home: palette == null
+          ? home
+          : PaletteScope(palette: palette, child: home),
+    ),
   );
 }
 
 /// Every control on screen is big enough to hit and says what it does.
 ///
 /// Both guidelines are Flutter's own, so what passes here is what an audit
-/// with the platform's rules would ask for. The third one,
-/// `textContrastGuideline`, cannot run yet: it rasterises the screen, which
-/// makes `google_fonts` fetch the real face over the network. It comes back
-/// when the fonts are vendored. Until then `test/palette_test.dart` holds the
-/// contrast line, measured rather than sampled.
+/// with the platform's rules would ask for.
 Future<void> _expectUsableControls(WidgetTester tester) async {
   await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
   await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+}
+
+/// Every string on screen clears WCAG AA where the app promises it will.
+///
+/// Deferred in phase 6c because `textContrastGuideline` rasterises the screen,
+/// which made `google_fonts` reach for the network and fail. The faces are
+/// vendored now, so it runs.
+///
+/// It runs on the high-contrast palette only, and that is the point. The
+/// standard palette is the design's own, and the design's dim end does not
+/// clear AA — `test/palette_test.dart` measures exactly how far it misses and
+/// why the second palette exists. What this adds over that arithmetic is the
+/// composite: text over a tinted card over a gradient, sampled from real
+/// pixels rather than from the two colours someone remembered to compare.
+Future<void> _expectReadableText(WidgetTester tester) async {
+  await expectLater(tester, meetsGuideline(textContrastGuideline));
 }
 
 void main() {
@@ -270,5 +287,57 @@ void main() {
       isSemantics(isButton: true, hasTapAction: true),
     );
     handle.dispose();
+  });
+
+  // --- High contrast, rasterised ---------------------------------------------
+
+  testWidgets('high contrast: home is readable, pixel by pixel',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      await _harness(const HomeScreen(), palette: AppPalette.highContrast),
+    );
+    await tester.pumpAndSettle();
+
+    await _expectReadableText(tester);
+  });
+
+  testWidgets('high contrast: the play shell is readable, HUD and D-pad',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      await _harness(PlayScreen(cabinet: _serpent), palette: AppPalette.highContrast),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+
+    await _expectReadableText(tester);
+  });
+
+  testWidgets('high contrast: the cabinet file is readable, on every tab',
+      (WidgetTester tester) async {
+    // The screen that found the miss. Its open tab draws on a filled magenta
+    // pill, where the design's white measures 3.51 against AA's 4.5; in this
+    // palette it carries dark type instead and measures 5.19.
+    await tester.pumpWidget(
+      await _harness(
+        CabinetDetailScreen(cabinet: _serpent),
+        palette: AppPalette.highContrast,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _expectReadableText(tester);
+    for (final String tab in <String>['Scores', 'Trophies']) {
+      await tester.tap(find.text(tab));
+      await tester.pumpAndSettle();
+      await _expectReadableText(tester);
+    }
+  });
+
+  testWidgets('high contrast: settings is readable', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      await _harness(const SettingsScreen(), palette: AppPalette.highContrast),
+    );
+    await tester.pumpAndSettle();
+
+    await _expectReadableText(tester);
   });
 }

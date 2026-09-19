@@ -183,7 +183,7 @@ class _Tab extends StatelessWidget {
                 tab.label,
                 textAlign: TextAlign.center,
                 style: active
-                    ? context.text.tabLabel.copyWith(color: AppColors.onAccent)
+                    ? context.text.tabLabelActive
                     : context.text.tabLabel,
               ),
             ),

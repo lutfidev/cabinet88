@@ -141,6 +141,21 @@ class AppTextStyles {
   /// Detail tab label.
   TextStyle get tabLabel => _body(AppFontSizes.body12, palette.textSubtle);
 
+  /// The label of the *open* tab, which sits on a filled magenta pill.
+  ///
+  /// The design draws it white. White on `#ff2d8a` measures 3.51 against WCAG
+  /// AA's 4.5 — the one string in the app that misses, and no rule in section
+  /// 14 can reach it, because both hues are fixed in [AppColors] and the
+  /// high-contrast derivation only moves alpha.
+  ///
+  /// So high contrast answers it with the design's own other filled pill: the
+  /// green play button carries dark type, and the same ink on magenta measures
+  /// 5.19. The standard palette keeps the design, verbatim.
+  TextStyle get tabLabelActive => _body(
+        AppFontSizes.body12,
+        palette.isHighContrast ? AppColors.onAccentPositive : AppColors.onAccent,
+      );
+
   /// The workhorse: subtitles, scores, chips, overlay notes.
   TextStyle get bodySmall => _body(AppFontSizes.body125, palette.textSubtle);
 
