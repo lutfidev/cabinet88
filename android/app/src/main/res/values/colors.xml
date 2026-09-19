@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The one place outside lib/theme/ that names a colour, because the window
+  background is painted by Android before any Dart runs and no Flutter token
+  can reach it.
+
+  Both values are copies, not new decisions:
+    launch_background  = AppColors.background     (#0a0714)
+    launch_foreground  = AppColors.accentHighlight (#ffe14d)
+
+  If lib/theme/colors.dart ever moves them, move them here too.
+-->
+<resources>
+    <color name="launch_background">#FF0A0714</color>
+    <color name="launch_foreground">#FFFFE14D</color>
+</resources>

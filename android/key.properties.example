@@ -1,0 +1,17 @@
+# Copy to `android/key.properties` and fill in. That file is gitignored and
+# must never be committed — it holds the passwords to the upload key.
+#
+# Create the keystore first:
+#
+#   keytool -genkeypair -v \
+#     -keystore D:/keys/cabinet88-upload.jks \
+#     -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 \
+#     -alias cabinet88
+#
+# Back the .jks file up somewhere that is not this machine. Losing it means
+# losing the ability to ever update Cabinet88 on Google Play.
+
+storeFile=D:/keys/cabinet88-upload.jks
+storePassword=
+keyAlias=cabinet88
+keyPassword=
